@@ -6,7 +6,7 @@ export class RewardXpValidModel extends BaseValidModel{
         if (this.val === undefined)
             return new MessageValidModel(false, "invalid rewardXp", "TODO");
 
-        if (typeof this.val !== "number") 
+        if (!Number.isFinite(this.val)) 
             return new MessageValidModel(false, "invalid rewardXp", "TODO");
         else if (!Number.isInteger(this.val)) 
             return new MessageValidModel(false, "invalid rewardXp", "TODO");       

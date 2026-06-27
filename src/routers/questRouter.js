@@ -14,6 +14,7 @@ router.post("/quests",
     (req, res) => questController.createQuest(req, res));
 
 router.patch("/quests/:id", 
+    (req, res, next) => dataValidService.idValidMiddleware(req, res, next),
     (req, res, next) => dataValidService.patchInspector(req, res, next),
     (req, res) => questController.patchQuestById(req, res));
 

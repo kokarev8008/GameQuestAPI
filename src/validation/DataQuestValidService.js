@@ -81,8 +81,8 @@ class DataQuestValidService {
         return nonValidElementsArr;
     }
     
-    async idValidMiddleware(req, res, next) {
-        const idValidModel = new IdValidModel(parseInt(req.body.id))
+    async idValidMiddleware(req, res, next) {       
+        const idValidModel = new IdValidModel(req.params.id);
         const resultValid = idValidModel.isValid();
 
         if (!resultValid.valid)
