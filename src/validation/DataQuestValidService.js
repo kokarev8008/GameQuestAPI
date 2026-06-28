@@ -9,7 +9,6 @@ import { BaseValidModel } from "./models/BaseValidModel.js";
 class DataQuestValidService {
     constructor() {
         this._bodyWhiteList = ["title", "difficulty", "rewardXp"];
-        this._validDifficulty = ["easy", "medium", "hard"];
     }
 
     async patchInspector(req, res, next) {

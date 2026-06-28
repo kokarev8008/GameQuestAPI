@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
-import Quest from "./Quest.js";
+import Quest from "./models/Quest.js";
+import { DifficultyValidModel } from "../validation/models/DifficultyValidModel.js";
 
 const dataPath = path.join("src", "data.json");
 
@@ -9,8 +10,16 @@ class QuestController {
         const dataArr = await this._getAllData();
         
         if (req.query.difficulty !== undefined) {
-            const filtredDataArr = dataArr.filter((item) => item.difficulty === req.query.difficulty);
-            res.status(200).send(filtredDataArr); 
+            const resultValidDifficulty = new DifficultyValidModel(req.query.difficulty).isValid();
+
+            if (resultValidDifficulty.valid) {
+                const filtredDataArr = dataArr.filter((item) => item.difficulty === req.query.difficulty);
+        
+                res.status(200).send(filtredDataArr); 
+            } else {
+                res.status(400).send({message: resultValidDifficulty.message, details: resultValidDifficulty.details});
+            }
+
         } else {
             res.status(200).send(dataArr);
         }
