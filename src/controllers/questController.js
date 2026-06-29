@@ -79,7 +79,7 @@ class QuestController {
 
         const allDataArr = await this._getAllData();
 
-        allDataArr[allDataArr.findIndex((item) => item.id === parseInt(req.params.id))] = dataById;
+        allDataArr[allDataArr.findIndex((item) => item.id === Number(req.params.id))] = dataById;
 
         await this._rewriteData(allDataArr);
 
@@ -109,7 +109,7 @@ class QuestController {
 
     async _getDataByID(id) {
         const dataArr = await this._getAllData();
-        const data = dataArr.find((item) => item["id"] === parseInt(id));
+        const data = dataArr.find((item) => item["id"] === Number(id));
 
         return data; 
     }

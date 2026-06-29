@@ -170,7 +170,7 @@ curl -X PATCH http://localhost:3000/quests/1 \
 
 **Пример запроса (сURL):**
 ```bash
-curl -X DELETE http://localhost:3000/quest/1
+curl -X DELETE http://localhost:3000/quests/1
 ```
 
 **Ответ (Response 204 No Content):**

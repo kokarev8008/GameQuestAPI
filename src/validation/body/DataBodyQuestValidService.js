@@ -1,24 +1,24 @@
-import { MessageValidModel } from "./models/MessageValidModel.js";
-import { TitleValidModel } from "./models/TittleValidModel.js";
-import { DifficultyValidModel } from "./models/DifficultyValidModel.js";
-import { RewardXpValidModel } from "./models/RewardXpValidModel.js";
-import { IdValidModel } from "./models/IdValidModel.js";
-import { CompletedValidModel } from "./models/CompletedValidModel.js";
-import { BaseValidModel } from "./models/BaseValidModel.js";
+import { MessageValidModel } from "../models/MessageValidModel.js";
+import { TitleValidModel } from "../models/TittleValidModel.js";
+import { DifficultyValidModel } from "../models/DifficultyValidModel.js";
+import { RewardXpValidModel } from "../models/RewardXpValidModel.js";
+import { IdValidModel } from "../models/IdValidModel.js";
+import { CompletedValidModel } from "../models/CompletedValidModel.js";
+import { BaseValidModel } from "../models/BaseValidModel.js";
 
-class DataQuestValidService {
+class DataBodyQuestValidService {
     constructor() {
         this._bodyWhiteList = ["title", "difficulty", "rewardXp"];
     }
 
-    async patchInspector(req, res, next) {
+    patchInspector(req, res, next) {
         if (Object.keys(req.body).length === 0) return res.status(400).send({message: "The body cannot be empty"});
 
         for (const key in req.body) {
             if (!Object.hasOwn(req.body, key)) continue;
             if (this._bodyWhiteList.includes(key) || key === "completed") continue;
 
-            return res.status(400).send({message: `Unknow field: ${key} - in the body`});
+            return res.status(400).send({message: `Unknown field: ${key} - in the body`});
         }
 
         const resultNonValidElementsArr = await this.validationElementsAndGetNonValidableElementsArr([
@@ -34,24 +34,27 @@ class DataQuestValidService {
         next();
     }
 
-    async postInspector(req, res, next) {
+    postInspector(req, res, next) {
         const bodyKeyArr = Object.keys(req.body);
         const unknowElementsArr = bodyKeyArr.filter((val) => !this._bodyWhiteList.includes(val));
 
         if (unknowElementsArr.length !== 0) 
-            return res.status(400).send({message: `Unknow field: ${unknowElementsArr} - in the body`});
+            return res.status(400).send({message: `Unknown field: ${unknowElementsArr} - in the body`});
 
         const whiteElementsInBodyArr = bodyKeyArr.filter((val) => this._bodyWhiteList.includes(val));
 
         if (whiteElementsInBodyArr.length !== this._bodyWhiteList.length) {
+            const absentWhiteElementArr = [];
             for (const whiteElementFromList of this._bodyWhiteList) {
                 if (whiteElementsInBodyArr.includes(whiteElementFromList)) continue;
 
-                return res.status(400).send({message: `Absent ${whiteElementFromList} in the body`});
+                absentWhiteElementArr.push(whiteElementFromList);
             }
+            
+            return res.status(400).send({message: `Absent ${absentWhiteElementArr} in the body`});
         }
 
-        const resultNonValidElementsArr = await this.validationElementsAndGetNonValidableElementsArr([
+        const resultNonValidElementsArr = this.validationElementsAndGetNonValidableElementsArr([
             new TitleValidModel(req.body.title), 
             new DifficultyValidModel(req.body.difficulty), 
             new RewardXpValidModel(req.body.rewardXp)]);
@@ -62,7 +65,7 @@ class DataQuestValidService {
         next();
     }
 
-    async validationElementsAndGetNonValidableElementsArr(validModelsArr) {
+    validationElementsAndGetNonValidableElementsArr(validModelsArr) {
         const nonValidElementsArr = [];
         
         for (const element of validModelsArr) {
@@ -80,7 +83,7 @@ class DataQuestValidService {
         return nonValidElementsArr;
     }
     
-    async idValidMiddleware(req, res, next) {       
+    idValidMiddleware(req, res, next) {       
         const idValidModel = new IdValidModel(req.params.id);
         const resultValid = idValidModel.isValid();
 
@@ -91,4 +94,4 @@ class DataQuestValidService {
     }
 }
 
-export default new DataQuestValidService();
+export default new DataBodyQuestValidService();
