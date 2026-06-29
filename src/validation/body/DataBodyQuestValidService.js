@@ -1,15 +1,9 @@
 import { MessageValidModel } from "../models/MessageValidModel.js";
-import { TitleValidModel } from "../models/TittleValidModel.js";
-import { DifficultyValidModel } from "../models/DifficultyValidModel.js";
-import { RewardXpValidModel } from "../models/RewardXpValidModel.js";
-import { IdValidModel } from "../models/IdValidModel.js";
-import { CompletedValidModel } from "../models/CompletedValidModel.js";
-import { BaseValidModel } from "../models/BaseValidModel.js";
+import baseValidService from "../models/BaseValidService.js";
 
-class DataBodyQuestValidService {
-    constructor() {
-        this._bodyWhiteList = ["title", "difficulty", "rewardXp"];
-    }
+export class DataBodyQuestValidService {
+    static difficultyLevelList = ["easy", "medium", "hard"];
+    _bodyWhiteList = ["title", "difficulty", "rewardXp"];
 
     patchInspector(req, res, next) {
         if (Object.keys(req.body).length === 0) return res.status(400).send({message: "The body cannot be empty"});
@@ -21,11 +15,11 @@ class DataBodyQuestValidService {
             return res.status(400).send({message: `Unknown field: ${key} - in the body`});
         }
 
-        const resultNonValidElementsArr = await this.validationElementsAndGetNonValidableElementsArr([
-            req.body.title !== undefined ? new TitleValidModel(req.body.title) : undefined,
-            req.body.difficulty !== undefined ? new DifficultyValidModel(req.body.difficulty) : undefined,
-            req.body.rewardXp !== undefined ? new RewardXpValidModel(req.body.rewardXp) : undefined,
-            req.body.completed !== undefined ? new CompletedValidModel(req.body.completed) : undefined,
+        const resultNonValidElementsArr = this.validationElementsAndGetNonValidableElementsArr([
+            req.body.title !== undefined ? baseValidService.isTextValue(req.body.title, "title") : undefined,
+            req.body.difficulty !== undefined ? baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", DataBodyQuestValidService.difficultyLevelList) : undefined,
+            req.body.rewardXp !== undefined ? baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp") : undefined,
+            req.body.completed !== undefined ? baseValidService.isBolleanValue(req.body.completed, "completed") : undefined,
         ]);
 
         if (resultNonValidElementsArr.length !== 0) 
@@ -50,14 +44,14 @@ class DataBodyQuestValidService {
 
                 absentWhiteElementArr.push(whiteElementFromList);
             }
-            
+
             return res.status(400).send({message: `Absent ${absentWhiteElementArr} in the body`});
         }
 
         const resultNonValidElementsArr = this.validationElementsAndGetNonValidableElementsArr([
-            new TitleValidModel(req.body.title), 
-            new DifficultyValidModel(req.body.difficulty), 
-            new RewardXpValidModel(req.body.rewardXp)]);
+            baseValidService.isTextValue(req.body.title, "title"), 
+            baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", DataBodyQuestValidService.difficultyLevelList), 
+            baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp")]);
         
         if (resultNonValidElementsArr.length !== 0) 
             return res.status(400).send(resultNonValidElementsArr.map((val) => ({message: val.message, details: val.details})));
@@ -65,30 +59,25 @@ class DataBodyQuestValidService {
         next();
     }
 
-    validationElementsAndGetNonValidableElementsArr(validModelsArr) {
+    validationElementsAndGetNonValidableElementsArr(messageValidModelsArr) {
         const nonValidElementsArr = [];
         
-        for (const element of validModelsArr) {
-            if (element instanceof BaseValidModel) {
-                const resultValid = element.isValid();
-                
-                if (resultValid instanceof MessageValidModel) {
-                    if (resultValid.valid) continue;
+        for (const element of messageValidModelsArr) {              
+            if (element instanceof MessageValidModel) {
+                if (element.valid) continue;
 
-                    nonValidElementsArr.push(resultValid);                
-                }
-            }
+                nonValidElementsArr.push(element);                
+            }     
         }
 
         return nonValidElementsArr;
     }
     
     idValidMiddleware(req, res, next) {       
-        const idValidModel = new IdValidModel(req.params.id);
-        const resultValid = idValidModel.isValid();
+        const resultValid = baseValidService.isPositiveNumber(req.params.id, "id");
 
         if (!resultValid.valid)
-            return res.status(400).send({errMessage: resultValid.message, details: resultValid.details});
+            return res.status(400).send([{message: resultValid.message, details: resultValid.details}]);
 
         next();
     }

@@ -1,7 +1,8 @@
 import path from "path";
 import fs from "fs/promises";
 import Quest from "./models/Quest.js";
-import { DifficultyValidModel } from "../validation/models/DifficultyValidModel.js";
+import { DataBodyQuestValidService } from "../validation/body/DataBodyQuestValidService.js";
+import baseValidService from "../validation/models/BaseValidService.js";
 
 const dataPath = path.join("src", "data.json");
 
@@ -10,7 +11,7 @@ class QuestController {
         const dataArr = await this._getAllData();
         
         if (req.query.difficulty !== undefined) {
-            const resultValidDifficulty = new DifficultyValidModel(req.query.difficulty).isValid();
+            const resultValidDifficulty = baseValidService.isValueFromWhiteList(req.query.difficulty, "difficluty", DataBodyQuestValidService.difficultyLevelList);
 
             if (resultValidDifficulty.valid) {
                 const filtredDataArr = dataArr.filter((item) => item.difficulty === req.query.difficulty);
