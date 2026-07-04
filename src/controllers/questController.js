@@ -8,36 +8,41 @@ import { ErrorModule } from "../err/ErrorModule.js";
 const dataPath = path.join("src", "data.json");
 
 class QuestController {
-    async getQuests(req, res) {
-        const dataArr = await this._getAllData();
+    async getQuests(req, res, next) {
+        const dataArr = await this._getAllData(next);
         
         if (req.query.difficulty !== undefined) {
             const resultValidDifficulty = baseValidService.isValueFromWhiteList(req.query.difficulty, "difficluty", DataBodyQuestValidService.difficultyLevelList);
 
             if (resultValidDifficulty instanceof ErrorModule) {
-                res.status(400).send({message: resultValidDifficulty.message, details: resultValidDifficulty.details});
+                return next(new ErrorModule(400, resultValidDifficulty.message, { difficulty: resultValidDifficulty.details }));
             } else {
                 const filtredDataArr = dataArr.filter((item) => item.difficulty === req.query.difficulty);
         
-                res.status(200).send(filtredDataArr); 
+                return res.status(200).send(filtredDataArr); 
             }
 
         } else {
-            res.status(200).send(dataArr);
+            return res.status(200).send(dataArr);
         }
+
+        return next();
     }
 
-    async getQuestById(req, res) {  
-        const data = await this._getDataByID(req.params.id);
+    async getQuestById(req, res, next) {  
+        const data = await this._getDataByID(req.params.id, next);
         
-        if (data === undefined)
-            res.status(404).send({message: "A quest with this ID was not found"});
-        else
-            res.status(200).send(data);
+        if (data === undefined) {
+            return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
+        } else {
+            return res.status(200).send(data);
+        }
+
+        return next();
     }
 
-    async createQuest(req, res) {
-        const dataArr = await this._getAllData();
+    async createQuest(req, res, next) {
+        const dataArr = await this._getAllData(next);
 
         const idArr = dataArr.length === 0 ? [0] : dataArr.map((item) => item.id);           
  
@@ -47,16 +52,17 @@ class QuestController {
         }) + 1;
 
         const newQuest = new Quest(newId, req.body.title, req.body.difficulty, req.body.rewardXp);
-        await this._savePushDataArr(newQuest);
+        await this._savePushDataArr(newQuest, next);
 
-        res.status(201).send(newQuest);
+        return res.status(201).send(newQuest);
     }
 
-    async patchQuestById(req, res) {
-        const dataById = await this._getDataByID(req.params.id);
+    async patchQuestById(req, res, next) {
+        const dataById = await this._getDataByID(req.params.id, next);
         
-        if (dataById === undefined) 
-            return res.status(404).send({message: "A quest with this ID was not found"});
+        if (dataById === undefined) {
+            return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
+        }
 
         const updatedServerDataObj = {};
 
@@ -79,54 +85,58 @@ class QuestController {
             updatedServerDataElement : serverDataByIdElement; 
         } 
 
-        const allDataArr = await this._getAllData();
+        const allDataArr = await this._getAllData(next);
 
         allDataArr[allDataArr.findIndex((item) => item.id === Number(req.params.id))] = dataById;
 
-        await this._rewriteData(allDataArr);
+        await this._rewriteData(allDataArr, next);
 
-        res.status(200).send({message: "The quest has been update"});
+        return res.status(200).send({message: "The quest has been update"});
     }
 
-    async deleteQuestById(req, res) {
-        const dataArr = await this._getAllData();
-        const data = await this._getDataByID(req.params.id)
+    async deleteQuestById(req, res, next) {
+        const dataArr = await this._getAllData(next);
+        const data = await this._getDataByID(req.params.id, next)
         
         if (data === undefined) {
-            return res.status(404).send({message: "A quest with this ID was not found"});
+            return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
         }
 
         const newDataArr = dataArr.filter((item) => item.id !== data.id)
-        await this._rewriteData(newDataArr);
+        await this._rewriteData(newDataArr, next);
 
-        res.status(204).send();
+        return res.status(204).send();
     }
 
-    async _getAllData() {
-        const data = await fs.readFile(dataPath, "utf8");
+    async _getAllData(next) {
+        const data = await fs.readFile(dataPath, "utf8")
+            .catch((err) => next(new ErrorModule(500, "Error Path", { path: err.path })));
+
         const dataArr = JSON.parse(data);
         
         return dataArr;
     }
 
-    async _getDataByID(id) {
-        const dataArr = await this._getAllData();
+    async _getDataByID(id, next) {
+        const dataArr = await this._getAllData(next);
         const data = dataArr.find((item) => item["id"] === Number(id));
 
         return data; 
     }
 
-    async _savePushDataArr(data) {
-        const dataArr = await this._getAllData();
+    async _savePushDataArr(data, next) {
+        const dataArr = await this._getAllData(next);
         dataArr.push(data);
 
         const jsonData = JSON.stringify(dataArr, null, 2);
-        await fs.writeFile(dataPath, jsonData);
+        await fs.writeFile(dataPath, jsonData)
+            .catch((err) => next(new ErrorModule(500, "Error Path", { path: err.path })));
     }
 
-    async _rewriteData(dataArr) {
+    async _rewriteData(dataArr, next) {
         const jsonData = JSON.stringify(dataArr, null, 2);
-        await fs.writeFile(dataPath, jsonData);
+        await fs.writeFile(dataPath, jsonData)
+            .catch((err) => next(new ErrorModule(500, "Error Path", { path: err.path })));
     }
 }
 

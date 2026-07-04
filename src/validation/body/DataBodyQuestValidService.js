@@ -77,6 +77,7 @@ export class DataBodyQuestValidService {
         
         if (resultValid instanceof ErrorModule) {
             resultValid.details = {
+                // Не понятно надо ли такое усложнение: время покажет
                 [resultValid.message.split(" ").find((val) => val === "id")]: resultValid.details
             }
 

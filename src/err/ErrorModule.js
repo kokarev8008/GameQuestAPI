@@ -29,20 +29,20 @@ export class ErrorModule extends Error {
                 } else {
                     return res.status(400).send(error.getErrorContract(error.errCodesText.validErrorText));
                 }
-            } else if (error.status === 404) {
-                if (error.details.id !== undefined) {
-                    return res.status(404).send(error.getErrorContract(error.errCodesText.questNotFoundText));
-                } else { //??
-                    return res.status(404).send(error.getErrorContract(error.errCodesText.routeNotFoundText));
-                }
+            } else if (error.status === 404 && error.details.id !== undefined) {
+                return res.status(404).send(error.getErrorContract(error.errCodesText.questNotFoundText));
             } else if (error.status === 500) {
-                console.error(error);
+                console.error(error.stack);
                 return res.status(500).send(error.getErrorContract(error.errCodesText.internalErrorText));
-            } else {
-                return next(error);
             }
         }
 
         return next(error);
+    }
+
+    static errorRouteNotFoundMiddleware(req, res, next) {
+        const err = new ErrorModule(404, "Route is not found", { route: req.path });
+
+        return res.status(404).json(err.getErrorContract(err.errCodesText.routeNotFoundText)); 
     }
 }
