@@ -3,7 +3,7 @@ import { ErrorModule } from "../../err/ErrorModule.js";
 
 export class DataBodyQuestValidService {
     static difficultyLevelList = ["easy", "medium", "hard"];
-    _bodyWhiteList = ["title", "difficulty", "rewardXp"];
+    _bodyWhiteList = ["title", "difficulty", "rewardXp", "description"];
 
     patchInspector(req, res, next) { 
         const bodyKeysArr = Object.keys(req.body);
@@ -19,11 +19,12 @@ export class DataBodyQuestValidService {
 
         const resultNonValidValuesArr = this.validationValuesAndGetNonValidableValuesArr(
         [
-            req.body.title !== undefined ? baseValidService.isTextValue(req.body.title, "title") : undefined,
+            req.body.title !== undefined ? baseValidService.isTextValue(req.body.title, "title", 3, 100) : undefined,
             req.body.difficulty !== undefined ? baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", 
                 DataBodyQuestValidService.difficultyLevelList) : undefined,
             req.body.rewardXp !== undefined ? baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp") : undefined,
             req.body.completed !== undefined ? baseValidService.isBolleanValue(req.body.completed, "completed") : undefined,
+            req.body.description !== undefined ? baseValidService.isTextValue(req.body.description, "description", 0, 300) : undefined,
         ]);
 
         if (resultNonValidValuesArr.length !== 0) 
@@ -45,18 +46,19 @@ export class DataBodyQuestValidService {
         
         const whiteKeysInBodyArr = bodyKeysArr.filter((val) => this._bodyWhiteList.includes(val));
 
-        if (whiteKeysInBodyArr.length !== this._bodyWhiteList.length) {
-            const absentWhiteKeysArr = this._bodyWhiteList.filter((val) => !whiteKeysInBodyArr.includes(val));
+        if ((!whiteKeysInBodyArr.includes("description") ? whiteKeysInBodyArr.length + 1 : whiteKeysInBodyArr.length) !== this._bodyWhiteList.length) {
+            const absentWhiteKeysArr = this._bodyWhiteList.filter((val) => val !== "description" ? !whiteKeysInBodyArr.includes(val) : false);
 
             return next(new ErrorModule(400, `Absent ${absentWhiteKeysArr} in the body`, { ...absentWhiteKeysArr }));
         }
 
         const resultNonValidValuesArr = this.validationValuesAndGetNonValidableValuesArr(
         [
-            baseValidService.isTextValue(req.body.title, "title"), 
+            baseValidService.isTextValue(req.body.title, "title", 3, 100), 
             baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", 
                 DataBodyQuestValidService.difficultyLevelList), 
-            baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp")
+            baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp"),
+            req.body.description !== undefined ? baseValidService.isTextValue(req.body.description, "description", 0, 300) : "",
         ]);
         
         if (resultNonValidValuesArr.length !== 0) 

@@ -52,6 +52,7 @@ curl -X GET http://localhost:3000/quests
     "title": "boss",
     "difficulty": "medium",
     "rewardXp": 2,
+    "description": "",
     "completed": false,
     "createdAt": "2026-06-12T19:00:02.826Z"
   },
@@ -60,6 +61,7 @@ curl -X GET http://localhost:3000/quests
     "title": "boss",
     "difficulty": "hard",
     "rewardXp": 52,
+    "description": "that is a been long fight...",
     "completed": false,
     "createdAt": "2026-06-12T19:00:17.509Z"
   },
@@ -82,6 +84,7 @@ curl -X GET http://localhost:3000/quests/1
   "title": "boss",
   "difficulty": "medium",
   "rewardXp": 2,
+  "description": "",
   "completed": false,
   "createdAt": "2026-06-12T19:00:02.826Z"
 }
@@ -97,7 +100,8 @@ curl -X GET http://localhost:3000/quests/1
 {
     "title": "find mom",
     "difficulty": "easy",
-    "rewardXp": 11
+    "rewardXp": 11,
+    "description": "" // - необязательный элемент  
 }
 ```
 
@@ -115,6 +119,7 @@ curl -X POST http://localhost:3000/quests \
   "title": "find mom",
   "difficulty": "easy",
   "rewardXp": 11,
+  "description": "", //- создаётся по умолчанию если не был явно объявлен в body
   "completed": false,
   "createdAt": "2026-06-12T20:00:00.000Z"
 }
@@ -131,6 +136,7 @@ curl -X POST http://localhost:3000/quests \
   "title": "find mom",
   "difficulty": "easy",
   "rewardXp": 11,
+  "description": "",
   "completed": false,
   "createdAt": "2026-06-12T20:00:00.000Z"
 }
@@ -142,6 +148,7 @@ curl -X POST http://localhost:3000/quests \
   "title": "sobaken",
   "difficulty": "medium",
   "rewardXp": 12,
+  "description": "LOL",
 }
 ```
 
@@ -149,7 +156,7 @@ curl -X POST http://localhost:3000/quests \
 ```bash
 curl -X PATCH http://localhost:3000/quests/1 \
   -H "Content-Type: application/json" \
-  -d '{"title": "sobaken", "difficulty": "medium", "rewardXp": 12}'
+  -d '{"title": "sobaken", "difficulty": "medium", "rewardXp": 12, "description": "LOL"}'
 ```
 
 **Ответ (Response 200 Ok):**
@@ -159,6 +166,7 @@ curl -X PATCH http://localhost:3000/quests/1 \
   "title": "sobaken",
   "difficulty": "medium",
   "rewardXp": 12,
+  "description": "LOL",
   "completed": false,
   "createdAt": "2026-06-12T20:00:00.000Z"
 }

@@ -30,7 +30,7 @@ class BaseValidService {
             return true;
     }
 
-    isTextValue(valueForValid, nameField) {
+    isTextValue(valueForValid, nameField, startLength, endLength) {
         if (valueForValid === undefined)
             return new ErrorModule(400, this.invalidText(nameField), `${nameField} is undefined`);
 
@@ -39,9 +39,9 @@ class BaseValidService {
 
         const titleTrimed = valueForValid.trim();
 
-        if (titleTrimed.length < 3)
+        if (titleTrimed.length < startLength)
             return new ErrorModule(400, this.invalidText(nameField), `${titleTrimed} - lenght < 3`);
-        else if (titleTrimed.length > 100)
+        else if (titleTrimed.length > endLength)
             return new ErrorModule(400, this.invalidText(nameField), `${titleTrimed} - lenght > 100`);
         else
             return true;

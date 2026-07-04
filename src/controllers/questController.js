@@ -51,7 +51,7 @@ class QuestController {
             else return prev;
         }) + 1;
 
-        const newQuest = new Quest(newId, req.body.title, req.body.difficulty, req.body.rewardXp);
+        const newQuest = new Quest(newId, req.body.title, req.body.difficulty, req.body.rewardXp, req.body.description);
         await this._savePushDataArr(newQuest, next);
 
         return res.status(201).send(newQuest);
