@@ -9,7 +9,7 @@ export class DataBodyQuestValidService {
         const bodyKeysArr = Object.keys(req.body);
 
         if (bodyKeysArr.length === 0) 
-            return next(new ErrorModule(400, "The body cannot be empty", null))
+            return next(new ErrorModule(400, "The body cannot be empty", "null"));
 
         const unknowKeysArr = bodyKeysArr.filter((val) => val !== "completed" && !this._bodyWhiteList.includes(val));
 
