@@ -1,85 +1,89 @@
-import { MessageValidModel } from "../models/MessageValidModel.js";
 import baseValidService from "../models/BaseValidService.js";
+import { ErrorModule } from "../../err/ErrorModule.js";
 
 export class DataBodyQuestValidService {
     static difficultyLevelList = ["easy", "medium", "hard"];
     _bodyWhiteList = ["title", "difficulty", "rewardXp"];
 
-    patchInspector(req, res, next) {
-        if (Object.keys(req.body).length === 0) return res.status(400).send({message: "The body cannot be empty"});
+    patchInspector(req, res, next) { 
+        const bodyKeysArr = Object.keys(req.body);
 
-        for (const key in req.body) {
-            if (!Object.hasOwn(req.body, key)) continue;
-            if (this._bodyWhiteList.includes(key) || key === "completed") continue;
+        if (bodyKeysArr.length === 0) 
+            return next(new ErrorModule(400, "The body cannot be empty", null))
 
-            return res.status(400).send({message: `Unknown field: ${key} - in the body`});
-        }
+        const unknowKeysArr = bodyKeysArr.filter((val) => val !== "completed" && !this._bodyWhiteList.includes(val));
 
-        const resultNonValidElementsArr = this.validationElementsAndGetNonValidableElementsArr([
+        if (unknowKeysArr.length !== 0) 
+            return next(new ErrorModule(400, "Unknown field in the body",
+                Object.fromEntries(Object.entries(req.body).filter(([key]) => unknowKeysArr.includes(key)))));
+
+        const resultNonValidValuesArr = this.validationValuesAndGetNonValidableValuesArr(
+        [
             req.body.title !== undefined ? baseValidService.isTextValue(req.body.title, "title") : undefined,
-            req.body.difficulty !== undefined ? baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", DataBodyQuestValidService.difficultyLevelList) : undefined,
+            req.body.difficulty !== undefined ? baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", 
+                DataBodyQuestValidService.difficultyLevelList) : undefined,
             req.body.rewardXp !== undefined ? baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp") : undefined,
             req.body.completed !== undefined ? baseValidService.isBolleanValue(req.body.completed, "completed") : undefined,
         ]);
 
-        if (resultNonValidElementsArr.length !== 0) 
-            return res.status(400).send(resultNonValidElementsArr.map((val) => ({message: val.message, details: val.details})));
+        if (resultNonValidValuesArr.length !== 0) 
+            return next(new ErrorModule(400, 
+                resultNonValidValuesArr.map((val) => val.message), 
+                Object.fromEntries(resultNonValidValuesArr.map((val) => 
+                    [this._bodyWhiteList.find((whiteVal) => val.message.split(" ").includes(whiteVal)), val.details]))));
 
-        next();
+        return next();
     }
 
     postInspector(req, res, next) {
-        const bodyKeyArr = Object.keys(req.body);
-        const unknowElementsArr = bodyKeyArr.filter((val) => !this._bodyWhiteList.includes(val));
+        const bodyKeysArr = Object.keys(req.body);
+        const unknowKeysArr = bodyKeysArr.filter((val) => !this._bodyWhiteList.includes(val));
 
-        if (unknowElementsArr.length !== 0) 
-            return res.status(400).send({message: `Unknown field: ${unknowElementsArr} - in the body`});
+        if (unknowKeysArr.length !== 0) 
+            return next(new ErrorModule(400, "Unknown field in the body",
+                Object.fromEntries(Object.entries(req.body).filter(([key]) => unknowKeysArr.includes(key)))));
+        
+        const whiteKeysInBodyArr = bodyKeysArr.filter((val) => this._bodyWhiteList.includes(val));
 
-        const whiteElementsInBodyArr = bodyKeyArr.filter((val) => this._bodyWhiteList.includes(val));
+        if (whiteKeysInBodyArr.length !== this._bodyWhiteList.length) {
+            const absentWhiteKeysArr = this._bodyWhiteList.filter((val) => !whiteKeysInBodyArr.includes(val));
 
-        if (whiteElementsInBodyArr.length !== this._bodyWhiteList.length) {
-            const absentWhiteElementArr = [];
-            for (const whiteElementFromList of this._bodyWhiteList) {
-                if (whiteElementsInBodyArr.includes(whiteElementFromList)) continue;
-
-                absentWhiteElementArr.push(whiteElementFromList);
-            }
-
-            return res.status(400).send({message: `Absent ${absentWhiteElementArr} in the body`});
+            return next(new ErrorModule(400, `Absent ${absentWhiteKeysArr} in the body`, { ...absentWhiteKeysArr }));
         }
 
-        const resultNonValidElementsArr = this.validationElementsAndGetNonValidableElementsArr([
+        const resultNonValidValuesArr = this.validationValuesAndGetNonValidableValuesArr(
+        [
             baseValidService.isTextValue(req.body.title, "title"), 
-            baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", DataBodyQuestValidService.difficultyLevelList), 
-            baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp")]);
+            baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", 
+                DataBodyQuestValidService.difficultyLevelList), 
+            baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp")
+        ]);
         
-        if (resultNonValidElementsArr.length !== 0) 
-            return res.status(400).send(resultNonValidElementsArr.map((val) => ({message: val.message, details: val.details})));
+        if (resultNonValidValuesArr.length !== 0) 
+            return next(new ErrorModule(400, 
+                resultNonValidValuesArr.map((val) => val.message), 
+                Object.fromEntries(resultNonValidValuesArr.map((val) => 
+                    [this._bodyWhiteList.find((whiteVal) => val.message.split(" ").includes(whiteVal)), val.details]))));
 
-        next();
+        return next();
     }
 
-    validationElementsAndGetNonValidableElementsArr(messageValidModelsArr) {
-        const nonValidElementsArr = [];
-        
-        for (const element of messageValidModelsArr) {              
-            if (element instanceof MessageValidModel) {
-                if (element.valid) continue;
-
-                nonValidElementsArr.push(element);                
-            }     
-        }
-
-        return nonValidElementsArr;
+    validationValuesAndGetNonValidableValuesArr(baseValidArr) {
+        return baseValidArr.filter((val) => val instanceof ErrorModule);
     }
     
     idValidMiddleware(req, res, next) {       
         const resultValid = baseValidService.isPositiveNumber(req.params.id, "id");
+        
+        if (resultValid instanceof ErrorModule) {
+            resultValid.details = {
+                [resultValid.message.split(" ").find((val) => val === "id")]: resultValid.details
+            }
 
-        if (!resultValid.valid)
-            return res.status(400).send([{message: resultValid.message, details: resultValid.details}]);
+            return next(resultValid);
+        }
 
-        next();
+        return next();
     }
 }
 

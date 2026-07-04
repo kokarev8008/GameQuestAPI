@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import Quest from "./models/Quest.js";
 import { DataBodyQuestValidService } from "../validation/body/DataBodyQuestValidService.js";
 import baseValidService from "../validation/models/BaseValidService.js";
+import { ErrorModule } from "../err/ErrorModule.js";
 
 const dataPath = path.join("src", "data.json");
 
@@ -13,12 +14,12 @@ class QuestController {
         if (req.query.difficulty !== undefined) {
             const resultValidDifficulty = baseValidService.isValueFromWhiteList(req.query.difficulty, "difficluty", DataBodyQuestValidService.difficultyLevelList);
 
-            if (resultValidDifficulty.valid) {
+            if (resultValidDifficulty instanceof ErrorModule) {
+                res.status(400).send({message: resultValidDifficulty.message, details: resultValidDifficulty.details});
+            } else {
                 const filtredDataArr = dataArr.filter((item) => item.difficulty === req.query.difficulty);
         
                 res.status(200).send(filtredDataArr); 
-            } else {
-                res.status(400).send({message: resultValidDifficulty.message, details: resultValidDifficulty.details});
             }
 
         } else {
