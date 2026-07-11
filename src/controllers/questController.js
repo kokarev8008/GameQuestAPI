@@ -15,6 +15,7 @@ class QuestController {
             const resultValidDifficulty = baseValidService.isValueFromWhiteList(req.query.difficulty, "difficluty", DataBodyQuestValidService.difficultyLevelList);
 
             if (resultValidDifficulty instanceof ErrorModule) {
+                //потом надо проверить если просто прокинуть то что мы получили от валидации
                 return next(new ErrorModule(400, resultValidDifficulty.message, { difficulty: resultValidDifficulty.details }));
             } else {
                 const filtredDataArr = dataArr.filter((item) => item.difficulty === req.query.difficulty);
