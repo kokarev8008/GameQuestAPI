@@ -5,7 +5,7 @@ export class ErrorModule extends Error {
         this.details = details;
     }
     
-    errCodesText = {
+    static errCodesText = {
         validErrorText: "VALIDATION_ERROR",
         invalidQuestIdText: "INVALID_QUEST_ID",
         questNotFoundText: "QUEST_NOT_FOUND",
@@ -25,15 +25,15 @@ export class ErrorModule extends Error {
         if (error instanceof ErrorModule) {
             if (error.status === 400) {
                 if (error.details.id !== undefined) {
-                    return res.status(400).send(error.getErrorContract(error.errCodesText.invalidQuestIdText));
+                    return res.status(400).send(error.getErrorContract(ErrorModule.errCodesText.invalidQuestIdText));
                 } else {
-                    return res.status(400).send(error.getErrorContract(error.errCodesText.validErrorText));
+                    return res.status(400).send(error.getErrorContract(ErrorModule.errCodesText.validErrorText));
                 }
             } else if (error.status === 404 && error.details.id !== undefined) {
-                return res.status(404).send(error.getErrorContract(error.errCodesText.questNotFoundText));
+                return res.status(404).send(error.getErrorContract(ErrorModule.errCodesText.questNotFoundText));
             } else if (error.status === 500) {
                 console.error(error.stack);
-                return res.status(500).send(error.getErrorContract(error.errCodesText.internalErrorText));
+                return res.status(500).send(error.getErrorContract(ErrorModule.errCodesText.internalErrorText));
             }
         }
 
@@ -43,6 +43,6 @@ export class ErrorModule extends Error {
     static errorRouteNotFoundMiddleware(req, res, next) {
         const err = new ErrorModule(404, "Route is not found", { route: req.path });
 
-        return res.status(404).json(err.getErrorContract(err.errCodesText.routeNotFoundText)); 
+        return res.status(404).json(err.getErrorContract(ErrorModule.errCodesText.routeNotFoundText)); 
     }
 }

@@ -1,6 +1,6 @@
+import questController from "../controllers/questController.js";
 import { Router } from "express";
 import dataBodyValidService from "../validation/body/DataBodyQuestValidService.js";
-import questController from "../controllers/questController.js";
 
 const router = Router();
 

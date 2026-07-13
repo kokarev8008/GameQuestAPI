@@ -5,7 +5,7 @@ import { DataBodyQuestValidService } from "../validation/body/DataBodyQuestValid
 import baseValidService from "../validation/models/BaseValidService.js";
 import { ErrorModule } from "../err/ErrorModule.js";
 
-const dataPath = path.join("src", "data.json");
+const dataPath = process.env.DATA_PATH;
 
 class QuestController {
     async getQuests(req, res, next) {
@@ -44,7 +44,7 @@ class QuestController {
 
     async createQuest(req, res, next) {
         const dataArr = await this._getAllData(next);
-
+        
         const idArr = dataArr.length === 0 ? [0] : dataArr.map((item) => item.id);           
  
         const newId = idArr.reduce((prev, curr) => {
@@ -110,8 +110,10 @@ class QuestController {
     }
 
     async _getAllData(next) {
-        const data = await fs.readFile(dataPath, "utf8")
+        let data = await fs.readFile(dataPath, "utf8")
             .catch((err) => next(new ErrorModule(500, "Error Path", { path: err.path })));
+        
+        data = data === "" ? "[]" : data;
 
         const dataArr = JSON.parse(data);
         
@@ -127,6 +129,7 @@ class QuestController {
 
     async _savePushDataArr(data, next) {
         const dataArr = await this._getAllData(next);
+        
         dataArr.push(data);
 
         const jsonData = JSON.stringify(dataArr, null, 2);

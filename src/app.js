@@ -1,9 +1,10 @@
 import express from "express";
-import questRouter from "./routers/questRouter.js";
 import { ErrorModule } from "./err/ErrorModule.js";
 import path from "node:path";
 
-process.env.DATA_FILE_PATH = path.join("src", "tests", "fixtures", "quests.initial.json");
+process.env.DATA_PATH = process.env.DATA_FILE_PATH || path.join(process.cwd(), "src", "data.json");
+
+const {default: questRouter} = await import("./routers/questRouter.js");
 
 const app = express();
 app.use(express.json());
