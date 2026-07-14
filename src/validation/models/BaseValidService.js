@@ -7,8 +7,6 @@ class BaseValidService {
         if (valueForValid === undefined)
             return new ErrorModule(400, this.invalidText(nameField), `${nameField} is undefined`);
         
-        valueForValid = Number(valueForValid);
-
         if (!Number.isFinite(valueForValid)) 
             return new ErrorModule(400, this.invalidText(nameField), `${nameField} is NaN`);
         else if (!Number.isInteger(valueForValid)) 
@@ -40,9 +38,9 @@ class BaseValidService {
         const titleTrimed = valueForValid.trim();
 
         if (titleTrimed.length < startLength)
-            return new ErrorModule(400, this.invalidText(nameField), `${titleTrimed} - lenght < 3`);
+            return new ErrorModule(400, this.invalidText(nameField), `${titleTrimed} - lenght < ${startLength}`);
         else if (titleTrimed.length > endLength)
-            return new ErrorModule(400, this.invalidText(nameField), `${titleTrimed} - lenght > 100`);
+            return new ErrorModule(400, this.invalidText(nameField), `${titleTrimed} - lenght > ${endLength}`);
         else
             return true;
     }

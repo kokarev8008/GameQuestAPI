@@ -75,7 +75,7 @@ export class DataBodyQuestValidService {
     }
     
     idValidMiddleware(req, res, next) {       
-        const resultValid = baseValidService.isPositiveNumber(req.params.id, "id");
+        const resultValid = baseValidService.isPositiveNumber(Number(req.params.id), "id");
         
         if (resultValid instanceof ErrorModule) {
             resultValid.details = {

@@ -11,6 +11,8 @@ class QuestController {
     async getQuests(req, res, next) {
         const dataArr = await this._getAllData(next);
         
+        if (dataArr === null) return;
+        
         if (req.query.difficulty !== undefined) {
             const resultValidDifficulty = baseValidService.isValueFromWhiteList(req.query.difficulty, "difficluty", DataBodyQuestValidService.difficultyLevelList);
 
@@ -32,6 +34,8 @@ class QuestController {
 
     async getQuestById(req, res, next) {  
         const data = await this._getDataByID(req.params.id, next);
+
+        if (data === null) return;
         
         if (data === undefined) {
             return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
@@ -44,6 +48,8 @@ class QuestController {
 
     async createQuest(req, res, next) {
         const dataArr = await this._getAllData(next);
+
+        if (dataArr === null) return;
         
         const idArr = dataArr.length === 0 ? [0] : dataArr.map((item) => item.id);           
  
@@ -53,7 +59,9 @@ class QuestController {
         }) + 1;
 
         const newQuest = new Quest(newId, req.body.title, req.body.difficulty, req.body.rewardXp, req.body.description);
-        await this._savePushDataArr(newQuest, next);
+        const result = await this._savePushDataArr(newQuest, next);
+
+        if (result === null) return;
 
         return res.status(201).send(newQuest);
     }
@@ -61,6 +69,8 @@ class QuestController {
     async patchQuestById(req, res, next) {
         const dataById = await this._getDataByID(req.params.id, next);
         
+        if (dataById === null) return;
+
         if (dataById === undefined) {
             return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
         }
@@ -88,9 +98,13 @@ class QuestController {
 
         const allDataArr = await this._getAllData(next);
 
+        if (allDataArr === null) return;
+
         allDataArr[allDataArr.findIndex((item) => item.id === Number(req.params.id))] = dataById;
 
-        await this._rewriteData(allDataArr, next);
+        const result = await this._rewriteData(allDataArr, next);
+
+        if (result === null) return;
 
         return res.status(200).send({message: "The quest has been update"});
     }
@@ -99,29 +113,39 @@ class QuestController {
         const dataArr = await this._getAllData(next);
         const data = await this._getDataByID(req.params.id, next)
         
+        if (dataArr === null || data === null) return;
+
         if (data === undefined) {
             return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
         }
 
         const newDataArr = dataArr.filter((item) => item.id !== data.id)
-        await this._rewriteData(newDataArr, next);
+        const result = await this._rewriteData(newDataArr, next);
+
+        if (result === null) return;
 
         return res.status(204).send();
     }
 
     async _getAllData(next) {
-        let data = await fs.readFile(dataPath, "utf8")
-            .catch((err) => next(new ErrorModule(500, "Error Path", { path: err.path })));
-        
-        data = data === "" ? "[]" : data;
+        try {
+            let data = await fs.readFile(dataPath, "utf8");
+            
+            data = data === "" ? "[]" : data;
+            
+            return JSON.parse(data);
 
-        const dataArr = JSON.parse(data);
-        
-        return dataArr;
+        } catch (err) {
+            next(new ErrorModule(500, "Error", { path: err.path }));
+            return null;
+        }
     }
 
     async _getDataByID(id, next) {
         const dataArr = await this._getAllData(next);
+
+        if (dataArr === null) return null;
+
         const data = dataArr.find((item) => item["id"] === Number(id));
 
         return data; 
@@ -129,18 +153,30 @@ class QuestController {
 
     async _savePushDataArr(data, next) {
         const dataArr = await this._getAllData(next);
-        
-        dataArr.push(data);
 
-        const jsonData = JSON.stringify(dataArr, null, 2);
-        await fs.writeFile(dataPath, jsonData)
-            .catch((err) => next(new ErrorModule(500, "Error Path", { path: err.path })));
+        if (dataArr === null) return null;
+
+        try {
+            dataArr.push(data);
+    
+            const jsonData = JSON.stringify(dataArr, null, 2);
+
+            await fs.writeFile(dataPath, jsonData);
+
+        } catch (err) {
+            next(new ErrorModule(500, "Error", { path: err.path }));
+            return null;
+        }
     }
 
     async _rewriteData(dataArr, next) {
-        const jsonData = JSON.stringify(dataArr, null, 2);
-        await fs.writeFile(dataPath, jsonData)
-            .catch((err) => next(new ErrorModule(500, "Error Path", { path: err.path })));
+        try {
+            const jsonData = JSON.stringify(dataArr, null, 2);
+            await fs.writeFile(dataPath, jsonData);
+        } catch (err) {
+            next(new ErrorModule(500, "Error", { path: err.path }));
+            return null;
+        }
     }
 }
 

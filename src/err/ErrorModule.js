@@ -24,7 +24,7 @@ export class ErrorModule extends Error {
     static errorHandlerMidlleware(error, req, res, next) {
         if (error instanceof ErrorModule) {
             if (error.status === 400) {
-                if (error.details.id !== undefined) {
+                if (error.details.id !== undefined && Object.entries(error.details).length === 1) {
                     return res.status(400).send(error.getErrorContract(ErrorModule.errCodesText.invalidQuestIdText));
                 } else {
                     return res.status(400).send(error.getErrorContract(ErrorModule.errCodesText.validErrorText));
@@ -36,8 +36,9 @@ export class ErrorModule extends Error {
                 return res.status(500).send(error.getErrorContract(ErrorModule.errCodesText.internalErrorText));
             }
         }
-
-        return next(error);
+        
+        const err = new ErrorModule(500, "Unexpected error", { error });
+        return res.status(500).send(err.getErrorContract(ErrorModule.errCodesText.internalErrorText));
     }
 
     static errorRouteNotFoundMiddleware(req, res, next) {
