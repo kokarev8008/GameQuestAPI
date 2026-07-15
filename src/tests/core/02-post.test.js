@@ -20,24 +20,24 @@ afterEach(() => {
     fs.truncateSync(process.env.DATA_FILE_PATH, 0);
 });
 
-test("POST /quests 201 + create quest with id/createdAt/completed", async () => {
+test("POST /quests 201 + create quest with id/createdAt/completed/ description by default", async () => {
     const res = await req(app).post("/quests").send(postQuestFixtures.valid);
     
     assert.equal(res.status, 201);
     assert.ok(Object.hasOwn(res.body, "id"));
     assert.ok(Object.hasOwn(res.body, "createdAt"));
     assert.ok(Object.hasOwn(res.body, "completed"));
+    assert.ok(Object.hasOwn(res.body, "description"));
 });
 
 test("POST /quests 400 + VALIDATION_ERROR - title missing", async () => {
     const res = await req(app).post("/quests").send(postQuestFixtures.invalid.titleMissing);
-
+    
     assert.equal(res.status, 400);
 
     assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
-
-    //потом изменить реализацию отображения недостающих ключей
-    assert.ok(res.body.error.details[0] === "title");
+    
+    assert.ok(res.body.error.details.title);
 });
 
 test("POST /quests 400 + VALIDATION_ERROR - rewardXp string", async () => {
@@ -68,5 +68,19 @@ test("POST /quests 400 + VALIDATION_ERROR - completed/id/createdAt/unknownField"
 
     assert.equal(res.status, 400);
 
+    assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
+});
+
+test("POST /quests 400 + VALIDATION_ERROR - description is not a string", async () => {
+    const res = await req(app).post("/quests").send(postQuestFixtures.invalid.descriptionType);
+    
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
+});
+
+test("POST /quests 400 + VALIDATION_ERROR - description length > 300", async () => {
+    const res = await req(app).post("/quests").send(postQuestFixtures.invalid.descriptionLength);
+
+    assert.equal(res.status, 400);
     assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
 });

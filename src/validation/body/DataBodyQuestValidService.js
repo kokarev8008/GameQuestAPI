@@ -17,7 +17,7 @@ export class DataBodyQuestValidService {
             return next(new ErrorModule(400, "Unknown field in the body",
                 Object.fromEntries(Object.entries(req.body).filter(([key]) => unknowKeysArr.includes(key)))));
 
-        const resultNonValidValuesArr = this.validationValuesAndGetNonValidableValuesArr(
+        const resultNonValidValuesArr = this.validationAndGetErrorModulesArr(
         [
             req.body.title !== undefined ? baseValidService.isTextValue(req.body.title, "title", 3, 100) : undefined,
             req.body.difficulty !== undefined ? baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", 
@@ -30,8 +30,7 @@ export class DataBodyQuestValidService {
         if (resultNonValidValuesArr.length !== 0) 
             return next(new ErrorModule(400, 
                 resultNonValidValuesArr.map((val) => val.message), 
-                Object.fromEntries(resultNonValidValuesArr.map((val) => 
-                    [this._bodyWhiteList.find((whiteVal) => val.message.split(" ").includes(whiteVal)), val.details]))));
+                Object.fromEntries(Object.entries(errorModulesArr.map((val) => val.details)).map(([key, val]) => Object.entries(val)).flat())));
 
         return next();
     }
@@ -49,28 +48,28 @@ export class DataBodyQuestValidService {
         if ((!whiteKeysInBodyArr.includes("description") ? whiteKeysInBodyArr.length + 1 : whiteKeysInBodyArr.length) !== this._bodyWhiteList.length) {
             const absentWhiteKeysArr = this._bodyWhiteList.filter((val) => val !== "description" ? !whiteKeysInBodyArr.includes(val) : false);
 
-            return next(new ErrorModule(400, `Absent ${absentWhiteKeysArr} in the body`, { ...absentWhiteKeysArr }));
+            return next(new ErrorModule(400, `Absent ${absentWhiteKeysArr} in the body`, 
+                Object.fromEntries(absentWhiteKeysArr.map((val) => [val, val]))));
         }
 
-        const resultNonValidValuesArr = this.validationValuesAndGetNonValidableValuesArr(
+        const errorModulesArr = this.validationAndGetErrorModulesArr(
         [
             baseValidService.isTextValue(req.body.title, "title", 3, 100), 
             baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", 
                 DataBodyQuestValidService.difficultyLevelList), 
             baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp"),
             req.body.description !== undefined ? baseValidService.isTextValue(req.body.description, "description", 0, 300) : "",
-        ]);
-        
-        if (resultNonValidValuesArr.length !== 0) 
+        ]);        
+
+        if (errorModulesArr.length !== 0) 
             return next(new ErrorModule(400, 
-                resultNonValidValuesArr.map((val) => val.message), 
-                Object.fromEntries(resultNonValidValuesArr.map((val) => 
-                    [this._bodyWhiteList.find((whiteVal) => val.message.split(" ").includes(whiteVal)), val.details]))));
+                errorModulesArr.map((val) => val.message), 
+                Object.fromEntries(Object.entries(errorModulesArr.map((val) => val.details)).map(([key, val]) => Object.entries(val)).flat())));
 
         return next();
     }
 
-    validationValuesAndGetNonValidableValuesArr(baseValidArr) {
+    validationAndGetErrorModulesArr(baseValidArr) {
         return baseValidArr.filter((val) => val instanceof ErrorModule);
     }
     
@@ -79,8 +78,7 @@ export class DataBodyQuestValidService {
         
         if (resultValid instanceof ErrorModule) {
             resultValid.details = {
-                // Не понятно надо ли такое усложнение: время покажет
-                [resultValid.message.split(" ").find((val) => val === "id")]: resultValid.details
+                id: resultValid.details
             }
 
             return next(resultValid);

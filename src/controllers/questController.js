@@ -106,6 +106,7 @@ class QuestController {
 
         if (result === null) return;
 
+        //надо подумать над заменой simply message на updated body  
         return res.status(200).send({message: "The quest has been update"});
     }
 

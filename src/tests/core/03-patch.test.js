@@ -30,7 +30,7 @@ test("PATCH /quests/1 200 - valid", async () => {
 
 test("PATCH /quests/1 400 + VALIDATION_ERROR - id/createdAt/unknownField", async () => {
     const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.idCreatedAtUnknownField);
-
+    
     assert.equal(resPatch.status, 400);
     
     assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
@@ -45,4 +45,17 @@ test("PATCH /quests/1 400 + VALIDATION_ERROR - empty body", async () => {
     assert.equal(resPatch.status, 400);
 
     assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
+});
+
+test("PATCH /quests/1 200 + description cleared", async () => {
+    const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.decriptionCleared);
+
+    assert.equal(resPatch.status, 200);
+
+    const result = fs.readFileSync(process.env.DATA_FILE_PATH, "utf8");
+    
+    const resultArrObj = JSON.parse(result);
+
+    assert.equal(resultArrObj[0].description, "");
+
 });
