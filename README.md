@@ -98,10 +98,10 @@ curl -X GET http://localhost:3000/quests/1
 **Тело запроса (Request Body):**
 ```json
 {
-    "title": "find mom",
-    "difficulty": "easy",
-    "rewardXp": 11,
-    "description": "" // - необязательный элемент  
+  "title": "find mom",
+  "difficulty": "easy",
+  "rewardXp": 11,
+  "description": "hi mom!", // - необязательный элемент  
 }
 ```
 
@@ -109,19 +109,19 @@ curl -X GET http://localhost:3000/quests/1
 ```bash
 curl -X POST http://localhost:3000/quests \
   -H "Content-Type: application/json" \
-  -d '{"title": "find mom", "difficulty": "easy", "rewardXp": 11}'
+  -d '{"title": "find mom", "difficulty": "easy", "rewardXp": 11, "description": "hi mom!"}'
 ```
 
 **Ответ (Response 201 Created):**
 ```json
 {
-  "id": "1",
+  "id": 1,                                // - создаётся на сервере
   "title": "find mom",
   "difficulty": "easy",
   "rewardXp": 11,
-  "description": "", //- создаётся по умолчанию если не был явно объявлен в body
-  "completed": false,
-  "createdAt": "2026-06-12T20:00:00.000Z"
+  "description": "hi mom!",               // - создаётся по умолчанию("") если не был явно объявлен в body
+  "completed": false,                     // - создаётся по умолчанию(false) на сервере
+  "createdAt": "2026-06-12T20:00:00.000Z" // - создаётся на сервере
 }
 ```
 
@@ -132,13 +132,13 @@ curl -X POST http://localhost:3000/quests \
 **Изначальный объект**
 ```json
 {
-  "id": "1",
+  "id": 1,                                //Не подлежит изменению
   "title": "find mom",
   "difficulty": "easy",
   "rewardXp": 11,
   "description": "",
   "completed": false,
-  "createdAt": "2026-06-12T20:00:00.000Z"
+  "createdAt": "2026-06-12T20:00:00.000Z" //Не подлежит изменению
 }
 ```
 
@@ -149,6 +149,7 @@ curl -X POST http://localhost:3000/quests \
   "difficulty": "medium",
   "rewardXp": 12,
   "description": "LOL",
+  "completed": true
 }
 ```
 
@@ -156,18 +157,18 @@ curl -X POST http://localhost:3000/quests \
 ```bash
 curl -X PATCH http://localhost:3000/quests/1 \
   -H "Content-Type: application/json" \
-  -d '{"title": "sobaken", "difficulty": "medium", "rewardXp": 12, "description": "LOL"}'
+  -d '{"title": "sobaken", "difficulty": "medium", "rewardXp": 12, "description": "LOL", "completed": true}'
 ```
 
 **Ответ (Response 200 Ok):**
 ```json
 {
-  "id": "1",
+  "id": 1,
   "title": "sobaken",
   "difficulty": "medium",
   "rewardXp": 12,
   "description": "LOL",
-  "completed": false,
+  "completed": true,
   "createdAt": "2026-06-12T20:00:00.000Z"
 }
 ```

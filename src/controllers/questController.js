@@ -106,8 +106,7 @@ class QuestController {
 
         if (result === null) return;
 
-        //надо подумать над заменой simply message на updated body  
-        return res.status(200).send({message: "The quest has been update"});
+        return res.status(200).send(dataById);
     }
 
     async deleteQuestById(req, res, next) {

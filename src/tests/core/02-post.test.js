@@ -1,4 +1,4 @@
-import test, { after, afterEach, beforeEach } from "node:test";
+import test, { afterEach, beforeEach, describe, it } from "node:test";
 import { strict as assert } from "node:assert";
 import req from "supertest";
 import { postQuestFixtures } from "../fixtures/post/postStorage.js";
@@ -71,16 +71,18 @@ test("POST /quests 400 + VALIDATION_ERROR - completed/id/createdAt/unknownField"
     assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
 });
 
-test("POST /quests 400 + VALIDATION_ERROR - description is not a string", async () => {
-    const res = await req(app).post("/quests").send(postQuestFixtures.invalid.descriptionType);
-    
-    assert.equal(res.status, 400);
-    assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
-});
+describe("POST /quests - description", () => {
+    it("400 + VALIDATION_ERROR - is not a string", async () => {
+        const res = await req(app).post("/quests").send(postQuestFixtures.invalid.descriptionType);
+        
+        assert.equal(res.status, 400);
+        assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
+    });
 
-test("POST /quests 400 + VALIDATION_ERROR - description length > 300", async () => {
-    const res = await req(app).post("/quests").send(postQuestFixtures.invalid.descriptionLength);
-
-    assert.equal(res.status, 400);
-    assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
+    it("400 + VALIDATION_ERROR - length > 300", async () => {
+        const res = await req(app).post("/quests").send(postQuestFixtures.invalid.descriptionLength);
+        
+        assert.equal(res.status, 400);
+        assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
+    });
 });

@@ -1,4 +1,4 @@
-import test from "node:test";
+import test, { describe, it } from "node:test";
 import { strict as assert } from "node:assert";
 import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
@@ -41,4 +41,21 @@ test("GET /unknown return 404 + ROUTE_NOT_FOUND", async () => {
 
     assert.equal(res.status, 404);
     assert.equal(res.body.error.code, ErrorModule.errCodesText.routeNotFoundText);
+});
+
+describe("GET /quests?difficulty", () => {
+    it("200 - valid (easy)", async () => {
+        const res = await req(app).get("/quests?difficulty=easy");
+        
+        assert.equal(res.status, 200);
+        
+        assert.ok(res.body.every((item) => item.difficulty === "easy"));
+    });
+
+    it("400 + VALIDATION_ERROR - unknown", async () => {
+        const res = await req(app).get("/quests?difficulty=unknown");
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
+    });
 });

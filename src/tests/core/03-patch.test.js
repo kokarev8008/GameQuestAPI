@@ -1,4 +1,4 @@
-import test, { before, afterEach } from "node:test";
+import test, { before, afterEach, } from "node:test";
 import { strict as assert } from "node:assert";
 import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
@@ -7,24 +7,23 @@ import path from "node:path";
 import fs from "node:fs";
 
 process.env.DATA_FILE_PATH = path.join(process.cwd(), "src", "tests", "tmp", "readyBody-quests.json");
+const readyBodyDataQuestJson = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
 
-const {default: app} = await import("../../app.js");
+const { default: app } = await import("../../app.js");
 
 before(() => {
     if (fs.statSync(process.env.DATA_FILE_PATH).size <= 0) {
-        const readyBodyDataQuestJson = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"));
         fs.writeFileSync(process.env.DATA_FILE_PATH, readyBodyDataQuestJson);
-    } 
+    }
 });
 
 afterEach(() => {
-    const readyBodyDataQuestJson = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"));
     fs.writeFileSync(process.env.DATA_FILE_PATH, readyBodyDataQuestJson);
 });
 
 test("PATCH /quests/1 200 - valid", async () => {
     const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.valid);
-    
+        
     assert.equal(resPatch.status, 200);
 });
 
@@ -52,10 +51,5 @@ test("PATCH /quests/1 200 + description cleared", async () => {
 
     assert.equal(resPatch.status, 200);
 
-    const result = fs.readFileSync(process.env.DATA_FILE_PATH, "utf8");
-    
-    const resultArrObj = JSON.parse(result);
-
-    assert.equal(resultArrObj[0].description, "");
-
+    assert.equal(resPatch.body.description, "");
 });
