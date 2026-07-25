@@ -96,12 +96,14 @@ curl -X GET http://localhost:3000/quests/1
 * **Метод:** `POST`
 
 **Тело запроса (Request Body):**
+description - является необязательным элементом
+
 ```json
 {
   "title": "find mom",
   "difficulty": "easy",
   "rewardXp": 11,
-  "description": "hi mom!", // - необязательный элемент  
+  "description": "hi mom!",
 }
 ```
 
@@ -115,15 +117,19 @@ curl -X POST http://localhost:3000/quests \
 **Ответ (Response 201 Created):**
 ```json
 {
-  "id": 1,                                // - создаётся на сервере
+  "id": 1,                         
   "title": "find mom",
   "difficulty": "easy",
   "rewardXp": 11,
-  "description": "hi mom!",               // - создаётся по умолчанию("") если не был явно объявлен в body
-  "completed": false,                     // - создаётся по умолчанию(false) на сервере
-  "createdAt": "2026-06-12T20:00:00.000Z" // - создаётся на сервере
+  "description": "hi mom!",               
+  "completed": false,                     
+  "createdAt": "2026-06-12T20:00:00.000Z" 
 }
 ```
+* **id** создаётся на сервере
+* **description** создаётся по умолчанию("") если не был явно объявлен в body
+* **completed** создаётся по умолчанию(false) на сервере
+* **createdAt** создаётся на сервере
 
 ### 3. Изменить элемент(-ы) объекта
 * **URL:** `/quests/:id`
@@ -132,15 +138,18 @@ curl -X POST http://localhost:3000/quests \
 **Изначальный объект**
 ```json
 {
-  "id": 1,                                //Не подлежит изменению
+  "id": 1,
   "title": "find mom",
   "difficulty": "easy",
   "rewardXp": 11,
   "description": "",
   "completed": false,
-  "createdAt": "2026-06-12T20:00:00.000Z" //Не подлежит изменению
+  "createdAt": "2026-06-12T20:00:00.000Z"
 }
 ```
+
+* **id** не подлежит изменению
+* **createdAt** не подлежит изменению
 
 **Тело запроса (Request Body):**
 ```json
@@ -183,6 +192,4 @@ curl -X DELETE http://localhost:3000/quests/1
 ```
 
 **Ответ (Response 204 No Content):**
-```json
-  No Content
-``` 
+No Content

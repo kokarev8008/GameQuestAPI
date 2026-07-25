@@ -37,11 +37,11 @@ export class DataBodyQuestValidService {
 
     postInspector(req, res, next) {
         const bodyKeysArr = Object.keys(req.body);
-        const unknowKeysArr = bodyKeysArr.filter((val) => !this._bodyWhiteList.includes(val));
+        const unknownKeysArr = bodyKeysArr.filter((val) => !this._bodyWhiteList.includes(val));
 
-        if (unknowKeysArr.length !== 0) 
+        if (unknownKeysArr.length !== 0) 
             return next(new ErrorModule(400, "Unknown field in the body",
-                Object.fromEntries(Object.entries(req.body).filter(([key]) => unknowKeysArr.includes(key)))));
+                Object.fromEntries(Object.entries(req.body).filter(([key]) => unknownKeysArr.includes(key)))));
         
         const whiteKeysInBodyArr = bodyKeysArr.filter((val) => this._bodyWhiteList.includes(val));
 
