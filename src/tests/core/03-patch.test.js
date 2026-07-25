@@ -76,13 +76,12 @@ test("PATCH /quests/1 400 + VALIDATION_ERROR - title type", async () => {
     const initialBodyQuestData = readyBodyDataQuestJson;
 
     const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.titleType);
-    console.log(resPatch.body);
     
     assert.equal(resPatch.status, 400);
 
     assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
 
-    assert.equal(resPatch.body.error.details, "title");
+    assert.ok(Object.hasOwn(resPatch.body.error.details, "title"));
 
     const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
     
@@ -94,13 +93,12 @@ test("PATCH /quests/1 400 + VALIDATION_ERROR - rewardXp is string", async () => 
     const initialBodyQuestData = readyBodyDataQuestJson;
 
     const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.rewardXpIsStr);
-    console.log(resPatch.body);
     
     assert.equal(resPatch.status, 400);
 
     assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
 
-    assert.equal(resPatch.body.error.details, "rewardXp");
+    assert.ok(Object.hasOwn(resPatch.body.error.details, "rewardXp")); 
 
     const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
     
@@ -117,7 +115,7 @@ test("PATCH /quests/1 400 + VALIDATION_ERROR - description length > 300", async 
 
     assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
 
-    assert.equal(resPatch.body.error.details, "description");
+    assert.ok(Object.hasOwn(resPatch.body.error.details, "description")); 
 
     const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
     
@@ -133,7 +131,7 @@ test("PATCH /quests/1 400 + VALIDATION_ERROR - descriptionType", async () => {
 
     assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
 
-    assert.equal(resPatch.body.error.details, "description");
+    assert.ok(Object.hasOwn(resPatch.body.error.details, "description"));
 
     const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
     

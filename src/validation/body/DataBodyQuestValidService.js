@@ -17,7 +17,7 @@ export class DataBodyQuestValidService {
             return next(new ErrorModule(400, "Unknown field in the body",
                 Object.fromEntries(Object.entries(req.body).filter(([key]) => unknowKeysArr.includes(key)))));
 
-        const resultNonValidValuesArr = this.validationAndGetErrorModulesArr(
+        const errorModulesArr = this.validationAndGetErrorModulesArr(
         [
             req.body.title !== undefined ? baseValidService.isTextValue(req.body.title, "title", 3, 100) : undefined,
             req.body.difficulty !== undefined ? baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", 
@@ -27,9 +27,9 @@ export class DataBodyQuestValidService {
             req.body.description !== undefined ? baseValidService.isTextValue(req.body.description, "description", 0, 300) : undefined,
         ]);
 
-        if (resultNonValidValuesArr.length !== 0) 
+        if (errorModulesArr.length !== 0) 
             return next(new ErrorModule(400, 
-                resultNonValidValuesArr.map((val) => val.message), 
+                errorModulesArr.map((val) => val.message), 
                 Object.fromEntries(Object.entries(errorModulesArr.map((val) => val.details)).map(([key, val]) => Object.entries(val)).flat())));
 
         return next();
