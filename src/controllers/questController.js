@@ -136,7 +136,7 @@ class QuestController {
             return JSON.parse(data);
 
         } catch (err) {
-            next(new ErrorModule(500, "Error", { path: err.path }));
+            next(new ErrorModule(500, "Error", null));
             return null;
         }
     }
@@ -164,7 +164,7 @@ class QuestController {
             await fs.writeFile(dataPath, jsonData);
 
         } catch (err) {
-            next(new ErrorModule(500, "Error", { path: err.path }));
+            next(new ErrorModule(500, "Error", null));
             return null;
         }
     }
@@ -174,7 +174,7 @@ class QuestController {
             const jsonData = JSON.stringify(dataArr, null, 2);
             await fs.writeFile(dataPath, jsonData);
         } catch (err) {
-            next(new ErrorModule(500, "Error", { path: err.path }));
+            next(new ErrorModule(500, "Error", null));
             return null;
         }
     }

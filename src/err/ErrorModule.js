@@ -37,7 +37,8 @@ export class ErrorModule extends Error {
             }
         }
         
-        const err = new ErrorModule(500, "Unexpected error", { error });
+        const err = new ErrorModule(500, "Unexpected error", null);
+        console.error(error);
         return res.status(500).send(err.getErrorContract(ErrorModule.errCodesText.internalErrorText));
     }
 

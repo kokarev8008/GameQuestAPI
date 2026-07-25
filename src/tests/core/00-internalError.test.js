@@ -13,6 +13,7 @@ test("INTERNAL_ERROR + 500 through GET /quests - errorPath", async () => {
 
     assert.equal(res.status, 500);
     assert.equal(res.body.error.code, ErrorModule.errCodesText.internalErrorText);
+    assert.equal(res.body.error.details, null);
 });
 
 process.env.DATA_FILE_PATH = path.join(process.cwd(), "src", "tests", "fixtures", "internalError.txt");
@@ -24,4 +25,5 @@ test("INTERNAL_ERROR + 500 through GET /quests - SyntaxError Json", async () => 
 
     assert.equal(res.status, 500);
     assert.equal(res.body.error.code, ErrorModule.errCodesText.internalErrorText);
+    assert.equal(res.body.error.details, null);
 });
