@@ -6,6 +6,7 @@ import rewardXpIsStr from "./invalid-patch-rewardXpIsStr.json" with { type: "jso
 import decriptionLengthAlot from "./invalid-patch-descriptionAlotLenght.json" with { type: "json" };
 import decriptionType from "./invalid-pathc-descriptionType.json" with { type: "json" };
 import titleType from "./invalid-patch-titleType.json" with { type: "json" };
+import completedType from "./invalid-patch-completedIsString.json" with { type: "json" };
 
 export const patchQuestFixtures = {
     valid: {
@@ -21,5 +22,6 @@ export const patchQuestFixtures = {
         decriptionCleared,
         decriptionLengthAlot,
         decriptionType,
+        completedType,
     }
 }
