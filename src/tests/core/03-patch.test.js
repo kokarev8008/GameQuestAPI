@@ -92,18 +92,23 @@ test("PATCH /quests/1 400 + VALIDATION_ERROR - title type", async () => {
 test("PATCH /quests/1 400 + VALIDATION_ERROR - title Length > 80", async () => {
     const initialBodyQuestData = readyBodyDataQuestJson;
 
+    let bodyQuest = fs.readFileSync(process.env.DATA_FILE_PATH, "utf8");
+    assert.deepEqual(initialBodyQuestData, bodyQuest);
+
     const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.titleLength80);
     
     assert.equal(resPatch.status, 400);
 
     assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
 
-    assert.ok(Object.hasOwn(resPatch.body.error.details, "title"));
+    assert.ok(resPatch.body.error.details.field);
+    assert.ok(resPatch.body.error.details.field === "title");
 
-    assert.ok(resPatch.body.error.details.maxLength === 80);
+    assert.ok(resPatch.body.error.details.max);
+    assert.ok(resPatch.body.error.details.max === 80);
+    assert.ok(resPatch.body.error.details.data.length > 80);
 
-    const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
-
+    bodyQuest = fs.readFileSync(process.env.DATA_FILE_PATH, "utf8");
     assert.deepEqual(initialBodyQuestData, bodyQuest);
 });
 
@@ -133,7 +138,7 @@ test("PATCH /quests/1 400 + VALIDATION_ERROR - description length > 300", async 
 
     assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
 
-    assert.ok(Object.hasOwn(resPatch.body.error.details, "description")); 
+    assert.ok(resPatch.body.error.details.field === "description"); 
 
     const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
     
