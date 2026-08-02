@@ -13,7 +13,7 @@ Total minutes: 37
 
 ## Branch and commits
 Branch: live-test-week-05
-Final commit: 
+Final commit: 87c0de8
 
 ## Red state
 What test did I write first?
@@ -81,4 +81,29 @@ BaseValidService - нужно было добавать поле чтобы ле
 
 Branch: live-test-week-5
 
-Correction commit SHA: 
+Correction commit SHA: 87c0de8
+
+Какие exact details теперь возвращает invalid PATCH:
+field, data, cause, max
+
+Как test доказывает неизменность runtime storage: 
+Перед запросом проверям datafile с fixture на их равность
+после проверяем также и чтобы ничего не изменилось черезе deepequal
+
+Как проверен valid title длиной 80 символов:
+assert.ok(resPatch.body.error.details.max === 80);
+assert.ok(resPatch.body.error.details.data.length > 80);
+
+Итог полного npm test:
+ℹ tests 27
+ℹ suites 2
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 427.9648
+
+Что я могу объяснить после corrections:
+необходимо досканально проверять все значения и ключи и их наличие 
+много что я упускаю при проверке потому хороший test этот тест с большими кол-во assert и их точность
