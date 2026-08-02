@@ -38,9 +38,9 @@ class BaseValidService {
         const titleTrimed = valueForValid.trim();
 
         if (titleTrimed.length < startLength)
-            return new ErrorModule(400, this.invalidText(nameField), {[nameField]: `${titleTrimed} - lenght < ${startLength}`});
+            return new ErrorModule(400, this.invalidText(nameField), {[nameField]: `${titleTrimed} - lenght < ${startLength}`, minLength: startLength});
         else if (titleTrimed.length > endLength)
-            return new ErrorModule(400, this.invalidText(nameField), {[nameField]: `${titleTrimed} - lenght > ${endLength}`});
+            return new ErrorModule(400, this.invalidText(nameField), {[nameField]: `${titleTrimed} - lenght > ${endLength}`, maxLength: endLength});
         else
             return true;
     }
