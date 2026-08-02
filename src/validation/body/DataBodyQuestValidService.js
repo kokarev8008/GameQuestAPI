@@ -19,7 +19,7 @@ export class DataBodyQuestValidService {
 
         const errorModulesArr = this.validationAndGetErrorModulesArr(
         [
-            req.body.title !== undefined ? baseValidService.isTextValue(req.body.title, "title", 3, 100) : undefined,
+            req.body.title !== undefined ? baseValidService.isTextValue(req.body.title, "title", 3, 80) : undefined,
             req.body.difficulty !== undefined ? baseValidService.isValueFromWhiteList(req.body.difficulty, "difficulty", 
                 DataBodyQuestValidService.difficultyLevelList) : undefined,
             req.body.rewardXp !== undefined ? baseValidService.isPositiveNumber(req.body.rewardXp, "rewardXp") : undefined,

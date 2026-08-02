@@ -7,6 +7,8 @@ import decriptionLengthAlot from "./invalid-patch-descriptionAlotLenght.json" wi
 import decriptionType from "./invalid-pathc-descriptionType.json" with { type: "json" };
 import titleType from "./invalid-patch-titleType.json" with { type: "json" };
 import completedType from "./invalid-patch-completedIsString.json" with { type: "json" };
+import titleLength80 from "./invalid-patch-titleLength80.json" with { type: "json" };
+
 
 export const patchQuestFixtures = {
     valid: {
@@ -16,6 +18,7 @@ export const patchQuestFixtures = {
 
     invalid: {
         titleType,
+        titleLength80,
         rewardXpIsStr,
         idCreatedAtUnknownField,
         emptyBody,

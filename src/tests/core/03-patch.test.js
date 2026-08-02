@@ -89,6 +89,24 @@ test("PATCH /quests/1 400 + VALIDATION_ERROR - title type", async () => {
 
 });
 
+test("PATCH /quests/1 400 + VALIDATION_ERROR - title Length > 80", async () => {
+    const initialBodyQuestData = readyBodyDataQuestJson;
+
+    const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.titleLength80);
+    
+    assert.equal(resPatch.status, 400);
+
+    assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
+
+    assert.ok(Object.hasOwn(resPatch.body.error.details, "title"));
+
+    assert.ok(resPatch.body.error.details.maxLength === 80);
+
+    const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+
+    assert.deepEqual(initialBodyQuestData, bodyQuest);
+});
+
 test("PATCH /quests/1 400 + VALIDATION_ERROR - rewardXp is string", async () => {
     const initialBodyQuestData = readyBodyDataQuestJson;
 
