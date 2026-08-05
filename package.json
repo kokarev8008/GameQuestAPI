@@ -22,7 +22,8 @@
     "test:coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
