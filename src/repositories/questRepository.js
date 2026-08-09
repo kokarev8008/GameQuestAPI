@@ -4,12 +4,16 @@ import Quest from "../controllers/models/Quest.js";
 class QuestRepository {
     async getAllQuests() {
         const result = await pool.query("SELECT * FROM quests ORDER BY id ASC");
+
         return this._fromSnakeCaseToCamelCase(result.rows);
     }
 
     async getQuestById(id) {
         const result = await pool.query("SELECT * FROM quests WHERE id = $1", [id]);
-        return this._fromSnakeCaseToCamelCase(result.rows[0]);
+
+        const camelCaseResult = this._fromSnakeCaseToCamelCase(result.rows[0]);
+
+        return camelCaseResult instanceof Quest ? camelCaseResult : null;
     }
 
     async createQuest(title, difficulty, rewardXp, description = "") {
@@ -17,7 +21,9 @@ class QuestRepository {
                         "VALUES ($1, $2, $3, $4) RETURNING *";
         const result = await pool.query(query, [title, difficulty, rewardXp, description]);
 
-        return this._fromSnakeCaseToCamelCase(result.rows[0]);
+        const camelCaseResult = this._fromSnakeCaseToCamelCase(result.rows[0]);
+
+        return camelCaseResult instanceof Quest ? camelCaseResult : null;
     }
 
     async updateQuest(id, post) { 
@@ -43,7 +49,9 @@ class QuestRepository {
 
         const result = await pool.query(query, [id, ...values]);
 
-        return result.rows[0];
+        const camelCaseResult = this._fromSnakeCaseToCamelCase(result.rows[0]);
+
+        return camelCaseResult instanceof Quest ? camelCaseResult : null;
     }
 
     async deleteQuest(id) {

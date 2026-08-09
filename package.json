@@ -19,8 +19,7 @@
     "dev": "nodemon src/index.js",
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "test:coverage": "node --test --experimental-test-coverage",
-    "db:init": "node --env-file=.env src/analytics/dbInit.js"
+    "test:coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
