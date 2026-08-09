@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS quests;
+
 CREATE TABLE quests (
     id SERIAL PRIMARY KEY,
     title VARCHAR(80) NOT NULL,
