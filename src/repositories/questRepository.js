@@ -20,7 +20,7 @@ class QuestRepository {
         const query = "SELECT COUNT(*)::integer AS total, COUNT(completed) " + 
         "FILTER(WHERE completed = true)::integer AS completed, COUNT(completed) " + 
         "FILTER(WHERE completed = false)::integer AS active, COALESCE(SUM(reward_xp), 0)::integer AS total_reward_xp, " + 
-        "AVG(reward_xp) AS average_reward_xp , jsonb_build_object('easy', COUNT(*) FILTER(WHERE difficulty = 'easy'), " + 
+        "COALESCE(round(AVG(reward_xp), 2)::REAL, 0) AS average_reward_xp, jsonb_build_object('easy', COUNT(*) FILTER(WHERE difficulty = 'easy'), " + 
         "'medium', COUNT(*) FILTER(WHERE difficulty = 'medium'), 'hard', COUNT(*) " +
         "FILTER(WHERE difficulty = 'hard')) AS by_difficulty FROM quests";
 

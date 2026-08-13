@@ -41,18 +41,19 @@ describe("DB query repository", () => {
                 await dbTruncateTableQuest(pool);
 
                 const res = await req(app).get("/quests/stats");
+                console.log(res.body);
                 
                 assert.equal(res.status, 200);
                 assert.ok(res.body);
                 
                 assert.ok(typeof res.body.total === "number" && res.body.total === 0);
-                assert.ok(typeof res.body.completed === "number" && res.body.total === 0);
-                assert.ok(typeof res.body.active === "number" && res.body.total === 0);
-                assert.ok(typeof res.body.totalRewardXp === "number" && res.body.total === 0);
-                assert.ok(typeof res.body.averageRewardXp === "number" && res.body.total === 0);
-                assert.ok(typeof res.body.byDifficulty.easy === "number" && res.body.total === 0);
-                assert.ok(typeof res.body.byDifficulty.medium === "number" && res.body.total === 0);
-                assert.ok(typeof res.body.byDifficulty.hard === "number" && res.body.total === 0);
+                assert.ok(typeof res.body.completed === "number" && res.body.completed === 0);
+                assert.ok(typeof res.body.active === "number" && res.body.active === 0);
+                assert.ok(typeof res.body.totalRewardXp === "number" && res.body.totalRewardXp === 0);
+                assert.ok(typeof res.body.averageRewardXp === "number" && res.body.averageRewardXp === 0);
+                assert.ok(typeof res.body.byDifficulty.easy === "number" && res.body.byDifficulty.easy === 0);
+                assert.ok(typeof res.body.byDifficulty.medium === "number" && res.body.byDifficulty.medium === 0);
+                assert.ok(typeof res.body.byDifficulty.hard === "number" && res.body.byDifficulty.hard === 0);
             });
 
             it("fixed seed", async () => {
@@ -76,9 +77,12 @@ describe("DB query repository", () => {
                     hardQuery += element.difficulty === "hard" ? 1 : 0;
                 }                
 
+                const avgRewardXp = parseFloat((totalRewardXpQuery / dataFromGetQuery.length).toFixed(2));
+
                 assert.equal(completedQuery, dataFromGetStats.completed);
                 assert.equal(activeQuery, dataFromGetStats.active);
                 assert.equal(totalRewardXpQuery, dataFromGetStats.totalRewardXp);
+                assert.equal(avgRewardXp, dataFromGetStats.averageRewardXp);
                 assert.equal(easyQuery, dataFromGetStats.byDifficulty.easy);
                 assert.equal(mediumQuery, dataFromGetStats.byDifficulty.medium);
                 assert.equal(hardQuery, dataFromGetStats.byDifficulty.hard);
