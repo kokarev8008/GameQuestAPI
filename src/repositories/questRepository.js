@@ -5,15 +5,34 @@ class QuestRepository {
     async getAllQuests() {
         const result = await pool.query("SELECT * FROM quests ORDER BY id ASC");
 
-        return this._fromSnakeCaseToCamelCase(result.rows);
+        return this._questfromSnakeCaseToCamelCase(result.rows);
     }
 
     async getQuestById(id) {
         const result = await pool.query("SELECT * FROM quests WHERE id = $1", [id]);
 
-        const camelCaseResult = this._fromSnakeCaseToCamelCase(result.rows[0]);
+        const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
 
         return camelCaseResult instanceof Quest ? camelCaseResult : null;
+    }
+
+    async getStats() {
+        const query = "SELECT COUNT(*)::integer AS total, COUNT(completed) " + 
+        "FILTER(WHERE completed = true)::integer AS completed, COUNT(completed) " + 
+        "FILTER(WHERE completed = false)::integer AS active, COALESCE(SUM(reward_xp), 0)::integer AS total_reward_xp, " + 
+        "AVG(reward_xp) AS average_reward_xp , jsonb_build_object('easy', COUNT(*) FILTER(WHERE difficulty = 'easy'), " + 
+        "'medium', COUNT(*) FILTER(WHERE difficulty = 'medium'), 'hard', COUNT(*) " +
+        "FILTER(WHERE difficulty = 'hard')) AS by_difficulty FROM quests";
+
+        try {
+            if (pool.test != undefined) throw new Error("for_Test_Error");
+
+            const result = await pool.query(query);
+            
+            return this._fromSnakeCaseToCamelCase(result.rows[0]);
+        } catch (error) {
+            return null;            
+        }
     }
 
     async createQuest(title, difficulty, rewardXp, description = "") {
@@ -21,7 +40,7 @@ class QuestRepository {
                         "VALUES ($1, $2, $3, $4) RETURNING *";
         const result = await pool.query(query, [title, difficulty, rewardXp, description]);
 
-        const camelCaseResult = this._fromSnakeCaseToCamelCase(result.rows[0]);
+        const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
 
         return camelCaseResult instanceof Quest ? camelCaseResult : null;
     }
@@ -49,7 +68,7 @@ class QuestRepository {
 
         const result = await pool.query(query, [id, ...values]);
 
-        const camelCaseResult = this._fromSnakeCaseToCamelCase(result.rows[0]);
+        const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
 
         return camelCaseResult instanceof Quest ? camelCaseResult : null;
     }
@@ -62,7 +81,7 @@ class QuestRepository {
         return null;
     }
 
-    _fromSnakeCaseToCamelCase(resultRows) {
+    _questfromSnakeCaseToCamelCase(resultRows) {
         if (Array.isArray(resultRows)) {
             const mappedResult = resultRows.map((obj) => {
                 return new Quest(obj.id, obj.title, obj.difficulty, obj.reward_xp, obj.description, obj.completed, obj.created_at);
@@ -72,6 +91,15 @@ class QuestRepository {
         } else {
             return new Quest(resultRows.id, resultRows.title, resultRows.difficulty, resultRows.reward_xp, resultRows.description, resultRows.completed, resultRows.created_at);
         }
+    }
+
+    _fromSnakeCaseToCamelCase(resultRow) {
+        return Object.fromEntries(Object.entries(resultRow)
+            .map(([key, element]) => [key
+                    .split("_")
+                    .map((val, index) => index != 0 ? val.replace(val[0], val[0].toUpperCase()) : val)
+                    .join(""), 
+                    element]));
     }
 }
 

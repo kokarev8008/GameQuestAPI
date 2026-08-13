@@ -3,18 +3,19 @@ import { strict as assert } from "node:assert";
 import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
 import pool from "../../db/pool.js";
-import { dbTableTruncateAndCreateSeed, dbTableInit } from "../../analytics/dbInit.js";
+import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit, dbTruncateTableQuest } from "../../analytics/dbInit.js";
 import questRepository from "../../repositories/questRepository.js";
+import app from "../../analytics/analyticsApp.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
 
 before(async () => {
-    await dbTableInit(pool);
-    await dbTableTruncateAndCreateSeed(pool);
+    await dbTableQuestInit(pool);
+    await dbTableTruncateAndCreateSeedQuest(pool);
 });
 
 afterEach(async () => {
-    await dbTableTruncateAndCreateSeed(pool);
+    await dbTableTruncateAndCreateSeedQuest(pool);
 });
 
 after(() => pool.end());
@@ -33,6 +34,69 @@ describe("DB query repository", () => {
             assert.ok(result);
 
             assert.ok(result.id === 1);
+        });
+
+        describe("/quests/stats - Quests stats", () => {
+            it("200 - empty table", async () => {
+                await dbTruncateTableQuest(pool);
+
+                const res = await req(app).get("/quests/stats");
+                
+                assert.equal(res.status, 200);
+                assert.ok(res.body);
+                
+                assert.ok(typeof res.body.total === "number" && res.body.total === 0);
+                assert.ok(typeof res.body.completed === "number" && res.body.total === 0);
+                assert.ok(typeof res.body.active === "number" && res.body.total === 0);
+                assert.ok(typeof res.body.totalRewardXp === "number" && res.body.total === 0);
+                assert.ok(typeof res.body.averageRewardXp === "number" && res.body.total === 0);
+                assert.ok(typeof res.body.byDifficulty.easy === "number" && res.body.total === 0);
+                assert.ok(typeof res.body.byDifficulty.medium === "number" && res.body.total === 0);
+                assert.ok(typeof res.body.byDifficulty.hard === "number" && res.body.total === 0);
+            });
+
+            it("fixed seed", async () => {
+                const dataFromGetStats = await questRepository.getStats();
+                const dataFromGetQuery = await questRepository.getAllQuests();
+
+                console.log(dataFromGetStats);
+
+                assert.equal(dataFromGetStats.total, dataFromGetQuery.length);
+
+                let completedQuery = 0, activeQuery = 0, totalRewardXpQuery = 0, easyQuery = 0, mediumQuery = 0, hardQuery = 0; 
+
+                for (let i = 0; i < dataFromGetQuery.length; i++) {
+                    const element = dataFromGetQuery[i];
+                    
+                    completedQuery += element.completed === true ? 1 : 0;  
+                    activeQuery += element.completed === false ? 1 : 0;
+                    totalRewardXpQuery += element.rewardXp;
+                    easyQuery += element.difficulty === "easy" ? 1 : 0;
+                    mediumQuery += element.difficulty === "medium" ? 1 : 0;
+                    hardQuery += element.difficulty === "hard" ? 1 : 0;
+                }                
+
+                assert.equal(completedQuery, dataFromGetStats.completed);
+                assert.equal(activeQuery, dataFromGetStats.active);
+                assert.equal(totalRewardXpQuery, dataFromGetStats.totalRewardXp);
+                assert.equal(easyQuery, dataFromGetStats.byDifficulty.easy);
+                assert.equal(mediumQuery, dataFromGetStats.byDifficulty.medium);
+                assert.equal(hardQuery, dataFromGetStats.byDifficulty.hard);
+
+                assert.ok(dataFromGetStats.completed + dataFromGetStats.active === dataFromGetStats.total);
+            });
+
+            it("500 + INTERNAL_ERROR - database error", async () => {
+                pool.test = "TEXT_TEST";
+
+                const res = await req(app).get("/quests/stats");
+
+                assert.equal(res.status, 500);
+                assert.equal(res.body.error.code, ErrorModule.errCodesText.internalErrorText);
+                assert.equal(res.body.error.details, null);
+
+                pool.test = undefined;
+            });
         });
     });
 
