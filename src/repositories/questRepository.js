@@ -3,17 +3,26 @@ import Quest from "../controllers/models/Quest.js";
 
 class QuestRepository {
     async getAllQuests() {
-        const result = await pool.query("SELECT * FROM quests ORDER BY id ASC");
-
-        return this._questfromSnakeCaseToCamelCase(result.rows);
+        try {
+            const result = await pool.query("SELECT * FROM quests ORDER BY id ASC");
+    
+            return this._questfromSnakeCaseToCamelCase(result.rows);
+            
+        } catch (error) {
+            return null;
+        }
     }
 
     async getQuestById(id) {
-        const result = await pool.query("SELECT * FROM quests WHERE id = $1", [id]);
-
-        const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
-
-        return camelCaseResult instanceof Quest ? camelCaseResult : null;
+        try {
+            const result = await pool.query("SELECT * FROM quests WHERE id = $1", [id]);
+    
+            const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
+    
+            return camelCaseResult instanceof Quest ? camelCaseResult : null;
+        } catch (error) {
+            return null;
+        }
     }
 
     async getStats() {
@@ -38,47 +47,62 @@ class QuestRepository {
     async createQuest(title, difficulty, rewardXp, description = "") {
         const query = "INSERT INTO quests (title, difficulty, reward_xp, description)" + 
                         "VALUES ($1, $2, $3, $4) RETURNING *";
-        const result = await pool.query(query, [title, difficulty, rewardXp, description]);
 
-        const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
+        try {
+            const result = await pool.query(query, [title, difficulty, rewardXp, description]);
+    
+            const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
+    
+            return camelCaseResult instanceof Quest ? camelCaseResult : null;
 
-        return camelCaseResult instanceof Quest ? camelCaseResult : null;
+        } catch (error) {
+            return null;
+        }
     }
 
     async updateQuest(id, post) { 
-        const blackList = ["id", "createdAt"];
-
-        const safeKeysArr = Object.keys(post)
-            .map((key) => key === "rewardXp" ? "reward_xp" : key)
-            .filter((key) => !blackList.includes(key));
-
-        const sqlKeysArr = safeKeysArr.map((key, index) => `${key} = $${index + 2}`).join(", ");
-
-        const query = `UPDATE quests SET ${sqlKeysArr} WHERE id = $1 RETURNING *`;
-
-        const values = [];
-
-        for (const key in post) {
-            if (blackList.includes(key)) continue;
+        try {
+            const blackList = ["id", "createdAt"];
+    
+            const safeKeysArr = Object.keys(post)
+                .map((key) => key === "rewardXp" ? "reward_xp" : key)
+                .filter((key) => !blackList.includes(key));
+    
+            const sqlKeysArr = safeKeysArr.map((key, index) => `${key} = $${index + 2}`).join(", ");
+    
+            const query = `UPDATE quests SET ${sqlKeysArr} WHERE id = $1 RETURNING *`;
+    
+            const values = [];
+    
+            for (const key in post) {
+                if (blackList.includes(key)) continue;
+                
+                const element = post[key];
+                
+                values.push(element);
+            }
+    
+            const result = await pool.query(query, [id, ...values]);
+    
+            const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
+    
+            return camelCaseResult instanceof Quest ? camelCaseResult : null;
             
-            const element = post[key];
-            
-            values.push(element);
+        } catch (error) {
+            return null;
         }
-
-        const result = await pool.query(query, [id, ...values]);
-
-        const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
-
-        return camelCaseResult instanceof Quest ? camelCaseResult : null;
     }
 
     async deleteQuest(id) {
-        const query = "DELETE FROM quests WHERE id = $1"
-        
-        await pool.query(query, [id]);
-
-        return null;
+        try {
+            const query = "DELETE FROM quests WHERE id = $1"
+            
+            await pool.query(query, [id]);
+    
+            return null;
+        } catch (error) {
+            return null;
+        }
     }
 
     _questfromSnakeCaseToCamelCase(resultRows) {

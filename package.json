@@ -17,9 +17,10 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node --test",
+    "test": "node --test", 
     "test:watch": "node --test --watch",
-    "test:coverage": "node --test --experimental-test-coverage"
+    "test:coverage": "node --test --experimental-test-coverage",
+    "test:dbRepo": "node --test --test-name-pattern=\"DB query repository\" src/tests/database/db.test.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

@@ -21,6 +21,10 @@ afterEach(async () => {
 after(() => pool.end());
 
 describe("DB query repository", () => {
+    it("db equality db_test_database", async () => {
+        assert.equal(pool.options.database, process.env.DB_TEST_DATABASE);
+    });
+
     describe("GET", () => {
         it("All quests", async () => {
             const result = await questRepository.getAllQuests();
@@ -41,7 +45,6 @@ describe("DB query repository", () => {
                 await dbTruncateTableQuest(pool);
 
                 const res = await req(app).get("/quests/stats");
-                console.log(res.body);
                 
                 assert.equal(res.status, 200);
                 assert.ok(res.body);
@@ -59,8 +62,6 @@ describe("DB query repository", () => {
             it("fixed seed", async () => {
                 const dataFromGetStats = await questRepository.getStats();
                 const dataFromGetQuery = await questRepository.getAllQuests();
-
-                console.log(dataFromGetStats);
 
                 assert.equal(dataFromGetStats.total, dataFromGetQuery.length);
 
@@ -108,7 +109,7 @@ describe("DB query repository", () => {
         it("create quest", async () => {
             const getResultBefore = await questRepository.getAllQuests();
             
-            const postResult = await questRepository.createQuest("hii", "hard", 40, "LOLLOLLOLLOLLOLLOLLOLLOLLOLLO");
+            const postResult = await questRepository.createQuest("hiisfwefwewefwewefwefwefwfewfewfewfefwefwefwefwefwefwewfewfewfewfewfewefffffffff", "hard", 40, "LOLLOLLOLLOLLOLLOLLOLLOLLOLLO");
 
             const getResultAfter = await questRepository.getAllQuests();
             
@@ -123,6 +124,40 @@ describe("DB query repository", () => {
             assert.ok(postResult.completed === false);
             assert.ok(typeof postResult.rewardXp === "number");
         }); 
+
+        it("title 81 error", async () => {
+            const getResultBefore = await questRepository.getAllQuests();
+
+            const result = await questRepository.createQuest(";sJUP;OSIJUA;EOGFJUA;EPOGJ;EOGUJ;OGUJE;OGJEOGJE'OGJEGAJE'OEJ'EJGADASDASASDASDASDD", "easy", 25);
+
+            const getResultAfter = await questRepository.getAllQuests();
+
+            assert.equal(result, null);
+            assert.deepEqual(getResultBefore, getResultAfter);
+        });
+
+        it("rewardXp = 0 error", async () => {
+            const getResultBefore = await questRepository.getAllQuests();
+
+            const result = await questRepository.createQuest("ddd", "easy", 0);
+
+            const getResultAfter = await questRepository.getAllQuests();
+
+            assert.equal(result, null);
+            assert.deepEqual(getResultBefore, getResultAfter);
+
+        });
+        
+        it("difficulty invalid error", async () => {
+            const getResultBefore = await questRepository.getAllQuests();
+
+            const result = await questRepository.createQuest("ddd", "test", 25);
+
+            const getResultAfter = await questRepository.getAllQuests();
+
+            assert.equal(result, null);
+            assert.deepEqual(getResultBefore, getResultAfter);
+        });
     });
 
     describe("PATCH", () => {
