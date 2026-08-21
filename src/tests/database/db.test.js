@@ -21,8 +21,40 @@ afterEach(async () => {
 after(() => pool.end());
 
 describe("DB query repository", () => {
-    it("db equality db_test_database", async () => {
-        assert.equal(pool.options.database, process.env.DB_TEST_DATABASE);
+    it("db is a test database", async () => {
+        const res = await pool.query("SELECT current_database() AS db_name");
+        assert.equal(res.rows[0].db_name, process.env.DB_TEST_DATABASE);
+    });
+
+    it("persistance between independents connections", async () => { 
+        const client1 = await pool.connect();
+
+        let beforeLengthClient1 = 0;
+        let afterLengthClient2 = 0;
+
+        try {
+            beforeLengthClient1 = (await client1.query("SELECT * FROM quests")).rowCount;
+            await client1.query("INSERT INTO quests (title, difficulty, reward_xp) VALUES ('йОУу', 'easy', 25)");
+        } catch (error) {
+            assert.fail(error);   
+        }
+        finally {
+            client1.release();
+        }
+
+        const client2 = await pool.connect();
+
+        try {
+            const result = await client2.query("SELECT * FROM quests");
+            afterLengthClient2 = result.rowCount;
+        } catch (error) {
+            assert.fail(error);   
+        }
+        finally {
+            client2.release();
+        }
+        
+        assert.notEqual(beforeLengthClient1, afterLengthClient2);
     });
 
     describe("GET", () => {
