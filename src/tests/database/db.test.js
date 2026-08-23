@@ -9,52 +9,44 @@ import app from "../../analytics/analyticsApp.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
 
-before(async () => {
-    await dbTableQuestInit(pool);
-    await dbTableTruncateAndCreateSeedQuest(pool);
-});
+after(() => pool.end());  
 
-afterEach(async () => {
-    await dbTableTruncateAndCreateSeedQuest(pool);
+test("db is a test database", async () => {
+    const res = await pool.query("SELECT current_database() AS db_name");
+    assert.equal(res.rows[0].db_name, process.env.DB_TEST_DATABASE);
 });
-
-after(() => pool.end());
 
 describe("DB query repository", () => {
-    it("db is a test database", async () => {
-        const res = await pool.query("SELECT current_database() AS db_name");
-        assert.equal(res.rows[0].db_name, process.env.DB_TEST_DATABASE);
+    before(async () => {
+        await dbTableQuestInit(pool);
+        await dbTableTruncateAndCreateSeedQuest(pool);
+    });
+    
+    afterEach(async () => {
+        await dbTableTruncateAndCreateSeedQuest(pool);
     });
 
     it("persistance between independents connections", async () => { 
         const client1 = await pool.connect();
-
-        let beforeLengthClient1 = 0;
-        let afterLengthClient2 = 0;
-
-        try {
-            beforeLengthClient1 = (await client1.query("SELECT * FROM quests")).rowCount;
-            await client1.query("INSERT INTO quests (title, difficulty, reward_xp) VALUES ('йОУу', 'easy', 25)");
-        } catch (error) {
-            assert.fail(error);   
-        }
-        finally {
-            client1.release();
-        }
-
         const client2 = await pool.connect();
 
         try {
-            const result = await client2.query("SELECT * FROM quests");
-            afterLengthClient2 = result.rowCount;
+            const query1 = "INSERT INTO quests (title, difficulty, reward_xp) VALUES ('test', 'easy', 25) RETURNING *";
+            const query2 = "SELECT * FROM quests";
+
+            const newElementFromClient1 = (await client1.query(query1)).rows[0];
+            const result2 = (await client2.query(query2)).rows;
+
+            const newElementFromClient2 = result2[result2.length - 1];
+
+            assert.deepEqual(newElementFromClient1, newElementFromClient2);
+
         } catch (error) {
             assert.fail(error);   
-        }
-        finally {
+        } finally {
+            client1.release();
             client2.release();
         }
-        
-        assert.notEqual(beforeLengthClient1, afterLengthClient2);
     });
 
     describe("GET", () => {
