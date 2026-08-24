@@ -62,11 +62,11 @@ class QuestRepository {
 
     async updateQuest(id, post) { 
         try {
-            const blackList = ["id", "createdAt"];
+            const whiteList = ["title", "description", "rewardXp", "difficulty", "completed"];
     
             const safeKeysArr = Object.keys(post)
                 .map((key) => key === "rewardXp" ? "reward_xp" : key)
-                .filter((key) => !blackList.includes(key));
+                .filter((key) => whiteList.includes(key) || key === "reward_xp");
     
             const sqlKeysArr = safeKeysArr.map((key, index) => `${key} = $${index + 2}`).join(", ");
     
@@ -75,13 +75,13 @@ class QuestRepository {
             const values = [];
     
             for (const key in post) {
-                if (blackList.includes(key)) continue;
+                if (!whiteList.includes(key)) continue;
                 
                 const element = post[key];
                 
                 values.push(element);
             }
-    
+            
             const result = await pool.query(query, [id, ...values]);
     
             const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);

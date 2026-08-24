@@ -195,7 +195,7 @@ describe("DB query repository", () => {
                 const beforeResult = await questRepository.getQuestById(1);
     
                 const afterResult = await questRepository.updateQuest(1, { rewardXp: 12412, completed: true, id: 2, createdAt: new Date() });
-    
+                
                 assert.ok(afterResult);
     
                 assert.equal(beforeResult.id, afterResult.id);
@@ -203,6 +203,44 @@ describe("DB query repository", () => {
     
                 assert.notDeepEqual(beforeResult, afterResult);
             });
+
+            it("allowed field success", async () => {
+                const beforeResult = await questRepository.getQuestById(1);
+
+                const allowedQuest = { 
+                    rewardXp: 12412, 
+                    completed: true, 
+                    difficulty: "medium", 
+                    title: "loli", 
+                    description: "full house"
+                };
+
+                const afterResult = await questRepository.updateQuest(1, allowedQuest);
+                const getAfterResult = await questRepository.getQuestById(1);
+
+                assert.ok(afterResult);
+
+                assert.notDeepEqual(beforeResult, afterResult);
+
+                assert.deepEqual(afterResult, getAfterResult);
+            });
+
+            it("unknown and protected field", async () => {
+                const beforeResult = await questRepository.getQuestById(1);
+
+                const allowedQuest = { 
+                    id: 2,
+                    createdAt: new Date(),
+                    unknown: true
+                };
+
+                await questRepository.updateQuest(1, allowedQuest);
+                
+                const getAfterResult = await questRepository.getQuestById(1);
+
+                assert.deepEqual(beforeResult, getAfterResult);
+            });
+             
         });
     
         describe("DELETE", () => {
