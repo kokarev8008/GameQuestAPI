@@ -64,10 +64,21 @@ class QuestRepository {
         try {
             const whiteList = ["title", "description", "rewardXp", "difficulty", "completed"];
     
+            const unknownFieldArr = [];
+
             const safeKeysArr = Object.keys(post)
                 .map((key) => key === "rewardXp" ? "reward_xp" : key)
-                .filter((key) => whiteList.includes(key) || key === "reward_xp");
-    
+                .filter((key) => {
+                    if (whiteList.includes(key) || key === "reward_xp") return true;
+                    else {
+                        unknownFieldArr.push(key);
+                        return false;
+                    };
+                });
+            console.log(safeKeysArr);
+            
+            if (unknownFieldArr.length > 0) return null;
+
             const sqlKeysArr = safeKeysArr.map((key, index) => `${key} = $${index + 2}`).join(", ");
     
             const query = `UPDATE quests SET ${sqlKeysArr} WHERE id = $1 RETURNING *`;

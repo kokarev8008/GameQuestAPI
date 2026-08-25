@@ -191,19 +191,6 @@ describe("DB query repository", () => {
         });
     
         describe("PATCH", () => {
-            it("update quests by id = 1", async () => {
-                const beforeResult = await questRepository.getQuestById(1);
-    
-                const afterResult = await questRepository.updateQuest(1, { rewardXp: 12412, completed: true, id: 2, createdAt: new Date() });
-                
-                assert.ok(afterResult);
-    
-                assert.equal(beforeResult.id, afterResult.id);
-                assert.equal(beforeResult.createdAt.toDateString(), afterResult.createdAt.toDateString());
-    
-                assert.notDeepEqual(beforeResult, afterResult);
-            });
-
             it("allowed field success", async () => {
                 const beforeResult = await questRepository.getQuestById(1);
 
@@ -234,13 +221,32 @@ describe("DB query repository", () => {
                     unknown: true
                 };
 
-                await questRepository.updateQuest(1, allowedQuest);
+                const result = await questRepository.updateQuest(1, allowedQuest);
                 
                 const getAfterResult = await questRepository.getQuestById(1);
 
+                assert.equal(result, null);
                 assert.deepEqual(beforeResult, getAfterResult);
             });
-             
+            
+            it("Unknown or protected field and allowed field = null", async () => {
+                const beforeResult = await questRepository.getQuestById(1);
+
+                const allowedQuest = { 
+                    id: 2,
+                    title: "3333",
+                    completed: true,
+                    createdAt: new Date(),
+                    unknown: true
+                };
+
+                const result = await questRepository.updateQuest(1, allowedQuest);
+                
+                const getAfterResult = await questRepository.getQuestById(1);
+
+                assert.equal(result, null);
+                assert.deepEqual(beforeResult, getAfterResult);
+            });
         });
     
         describe("DELETE", () => {
