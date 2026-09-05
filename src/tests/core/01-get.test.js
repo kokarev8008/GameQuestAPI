@@ -48,7 +48,6 @@ describe("GET /quests?difficulty", () => {
         const res = await req(app).get("/quests?difficulty=easy");
         
         assert.equal(res.status, 200);
-        // ? что я тут насрал ?
         assert.ok(res.body.every((item) => item.difficulty === "easy"));
     });
 

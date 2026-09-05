@@ -1,15 +1,15 @@
-import path from "path";
 import fs from "fs/promises";
 import Quest from "./models/Quest.js";
 import { DataBodyQuestValidService } from "../validation/body/DataBodyQuestValidService.js";
 import baseValidService from "../validation/models/BaseValidService.js";
 import { ErrorModule } from "../err/ErrorModule.js";
+import questRepository from "../repositories/questRepository.js";
 
 const dataPath = process.env.DATA_PATH;
 
 class QuestController {
     async getQuests(req, res, next) {
-        const dataArr = await this._getAllData(next);
+        const dataArr = await questRepository.getAllQuests(); 
         
         if (dataArr === null) return;
         
@@ -33,7 +33,7 @@ class QuestController {
     }
 
     async getQuestById(req, res, next) {  
-        const data = await this._getDataByID(req.params.id, next);
+        const data = await questRepository.getQuestById(req.params.id);
 
         if (data === null) return;
         
@@ -47,23 +47,11 @@ class QuestController {
     }
 
     async createQuest(req, res, next) {
-        const dataArr = await this._getAllData(next);
-
-        if (dataArr === null) return;
-        
-        const idArr = dataArr.length === 0 ? [0] : dataArr.map((item) => item.id);           
- 
-        const newId = idArr.reduce((prev, curr) => {
-            if (curr > prev) return curr;
-            else return prev;
-        }) + 1;
-
-        const newQuest = new Quest(newId, req.body.title, req.body.difficulty, req.body.rewardXp, req.body.description);
-        const result = await this._savePushDataArr(newQuest, next);
+        const result = await questRepository.createQuest(req.body.title, req.body.difficulty, req.body.rewardXp, req.body.description);
 
         if (result === null) return;
 
-        return res.status(201).send(newQuest);
+        return res.status(201).send(result);
     }
 
     async patchQuestById(req, res, next) {

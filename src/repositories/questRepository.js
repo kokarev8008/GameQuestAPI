@@ -16,9 +16,11 @@ class QuestRepository {
     async getQuestById(id) {
         try {
             const result = await pool.query("SELECT * FROM quests WHERE id = $1", [id]);
-    
+            
+            if (result.rows.length === 0) return undefined;
+
             const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
-    
+            
             return camelCaseResult instanceof Quest ? camelCaseResult : null;
         } catch (error) {
             return null;
@@ -75,7 +77,6 @@ class QuestRepository {
                         return false;
                     };
                 });
-            console.log(safeKeysArr);
             
             if (unknownFieldArr.length > 0) return null;
 
