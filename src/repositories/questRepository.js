@@ -62,13 +62,13 @@ class QuestRepository {
         }
     }
 
-    async updateQuest(id, post) { 
+    async updateQuest(id, data) { 
         try {
             const whiteList = ["title", "description", "rewardXp", "difficulty", "completed"];
     
             const unknownFieldArr = [];
 
-            const safeKeysArr = Object.keys(post)
+            const safeKeysArr = Object.keys(data)
                 .map((key) => key === "rewardXp" ? "reward_xp" : key)
                 .filter((key) => {
                     if (whiteList.includes(key) || key === "reward_xp") return true;
@@ -86,16 +86,18 @@ class QuestRepository {
     
             const values = [];
     
-            for (const key in post) {
+            for (const key in data) {
                 if (!whiteList.includes(key)) continue;
                 
-                const element = post[key];
+                const element = data[key];
                 
                 values.push(element);
             }
             
             const result = await pool.query(query, [id, ...values]);
     
+            if (result.rowCount === 0) return undefined;
+
             const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
     
             return camelCaseResult instanceof Quest ? camelCaseResult : null;
@@ -109,11 +111,11 @@ class QuestRepository {
         try {
             const query = "DELETE FROM quests WHERE id = $1"
             
-            await pool.query(query, [id]);
+            const result = await pool.query(query, [id]);
     
-            return null;
+            return result.rows; 
         } catch (error) {
-            return null;
+            return undefined;
         }
     }
 

@@ -1,4 +1,4 @@
-import test, { after, before, describe } from "node:test";
+import test, { after, afterEach, before, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
@@ -23,6 +23,10 @@ test("db is a test database", async () => {
 describe("GET", () => {
     before(async () => {
         await dbTableQuestInit(pool);
+        await dbTableTruncateAndCreateSeedQuest(pool);
+    });
+
+    afterEach(async () => {
         await dbTableTruncateAndCreateSeedQuest(pool);
     });
 
