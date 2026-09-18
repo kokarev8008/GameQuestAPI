@@ -1,10 +1,14 @@
 import pool from "../db/pool.js";
 import Quest from "../controllers/models/Quest.js";
 
-class QuestRepository {
+export class QuestRepository {
+    constructor(pool) {
+        this.pool = pool;
+    }
+
     async getAllQuests() {
         try {
-            const result = await pool.query("SELECT * FROM quests ORDER BY id ASC");
+            const result = await this.pool.query("SELECT * FROM quests ORDER BY id ASC");
     
             return this._questfromSnakeCaseToCamelCase(result.rows);
             
@@ -15,7 +19,7 @@ class QuestRepository {
 
     async getQuestById(id) {
         try {
-            const result = await pool.query("SELECT * FROM quests WHERE id = $1", [id]);
+            const result = await this.pool.query("SELECT * FROM quests WHERE id = $1", [id]);
             
             if (result.rows.length === 0) return undefined;
 
@@ -36,9 +40,9 @@ class QuestRepository {
         "FILTER(WHERE difficulty = 'hard')) AS by_difficulty FROM quests";
 
         try {
-            if (pool.test != undefined) throw new Error("for_Test_Error");
+            if (this.pool.test != undefined) throw new Error("for_Test_Error");
 
-            const result = await pool.query(query);
+            const result = await this.pool.query(query);
             
             return this._fromSnakeCaseToCamelCase(result.rows[0]);
         } catch (error) {
@@ -51,7 +55,7 @@ class QuestRepository {
                         "VALUES ($1, $2, $3, $4) RETURNING *";
 
         try {
-            const result = await pool.query(query, [title, difficulty, rewardXp, description]);
+            const result = await this.pool.query(query, [title, difficulty, rewardXp, description]);
     
             const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
     
@@ -94,7 +98,7 @@ class QuestRepository {
                 values.push(element);
             }
             
-            const result = await pool.query(query, [id, ...values]);
+            const result = await this.pool.query(query, [id, ...values]);
     
             if (result.rowCount === 0) return undefined;
 
@@ -111,7 +115,7 @@ class QuestRepository {
         try {
             const query = "DELETE FROM quests WHERE id = $1"
             
-            const result = await pool.query(query, [id]);
+            const result = await this.pool.query(query, [id]);
     
             return result.rows; 
         } catch (error) {
@@ -141,4 +145,4 @@ class QuestRepository {
     }
 }
 
-export default new QuestRepository();
+export default new QuestRepository(pool);

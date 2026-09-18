@@ -4,7 +4,7 @@ import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
 import pool from "../../db/pool.js";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit, dbTruncateTableQuest } from "../../analytics/dbInit.js";
-import questRepository from "../../repositories/questRepository.js";
+import questRepository, { QuestRepository } from "../../repositories/questRepository.js";
 import app from "../../app.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
@@ -19,6 +19,39 @@ describe("DB query repository", () => {
         } catch (error) {
             console.error(error);
             process.exit(1);
+        }
+    });
+    
+    it("transaction rollback", async () => {
+        const client = await pool.connect();
+
+        const clientRepo = new QuestRepository(client);
+
+        await dbTruncateTableQuest(client);
+
+        const beforeValidQuestA = await clientRepo.createQuest("the test", "easy", 50);
+        const beforeValidQuestB = await clientRepo.createQuest("two test", "hard", 250);
+
+        try {
+            await client.query("BEGIN");
+            
+            await clientRepo.updateQuest(1, {title: "you", rewardXp: 25});
+            await clientRepo.updateQuest(2, {title: 2, rewardXp: -50});
+
+            if (declinedQuest === null) throw new Error("Declined Quest");
+
+            await client.query("COMMIT");
+        } catch (error) {
+            await client.query("ROLLBACK");
+
+            const afterValidQuestA = await clientRepo.getQuestById(1);
+            const afterValidQuestB = await clientRepo.getQuestById(2);
+            
+            assert.deepEqual(beforeValidQuestA, afterValidQuestA);
+            assert.deepEqual(beforeValidQuestB, afterValidQuestB);
+            
+        } finally {
+            client.release();
         }
     });
     
