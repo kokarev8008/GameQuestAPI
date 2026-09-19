@@ -4,6 +4,7 @@ import req from "supertest";
 import app from "../../app.js";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
 import pool from "../../db/pool.js";
+import questRepository from "../../repositories/questRepository.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
 
@@ -32,7 +33,11 @@ describe("DELETE", () => {
     test("/quests/1 204 - body is empty", async () => {
         const res = await req(app).delete("/quests/1");
         
+        const questsAfter = await questRepository.getQuestById(1);
+        
         assert.equal(res.status, 204);
         assert.ok(Object.entries(res.body).length === 0);
+
+        assert.equal(questsAfter, undefined);
     });
 });

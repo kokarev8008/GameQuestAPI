@@ -7,7 +7,7 @@ class QuestController {
     async getQuests(req, res, next) {
         const dataArr = await questRepository.getAllQuests(); 
         
-        if (dataArr === null) return;
+        if (dataArr === null) return next(new ErrorModule(500, "dataBase error", null));
         
         if (req.query.difficulty !== undefined) {
             const resultValidDifficulty = baseValidService.isValueFromWhiteList(req.query.difficulty, "difficluty", DataBodyQuestValidService.difficultyLevelList);
@@ -28,7 +28,7 @@ class QuestController {
     async getQuestById(req, res, next) {  
         const data = await questRepository.getQuestById(req.params.id);
 
-        if (data === null) return;
+        if (data === null) return next(new ErrorModule(500, "dataBase error", null));
         
         if (data === undefined) {
             return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
@@ -48,7 +48,7 @@ class QuestController {
     async createQuest(req, res, next) {
         const result = await questRepository.createQuest(req.body.title, req.body.difficulty, req.body.rewardXp, req.body.description);
 
-        if (result === null) return;
+        if (result === null) return next(new ErrorModule(500, "dataBase error", null));
 
         return res.status(201).send(result);
     }
@@ -56,7 +56,7 @@ class QuestController {
     async patchQuestById(req, res, next) {
         const result = await questRepository.updateQuest(req.params.id, req.body);
 
-        if (result === null) return;
+        if (result === null) return next(new ErrorModule(500, "dataBase error", null));
         else if (result === undefined) 
             return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
 
@@ -66,7 +66,7 @@ class QuestController {
     async deleteQuestById(req, res, next) {
         const result = await questRepository.deleteQuest(req.params.id);
 
-        if (result === null) return;
+        if (result === null) return next(new ErrorModule(500, "dataBase error", null));
         else if (result === undefined) 
             return next(new ErrorModule(404, "A quest with this ID was not found", { id: req.params.id }));
 

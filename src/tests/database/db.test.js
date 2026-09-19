@@ -104,7 +104,7 @@ describe("DB query repository", () => {
             });
             
             describe("/quests/stats - Quests stats", () => {
-                it("200 - empty table", { todo: "Почему падает тест?" }, async () => {
+                it("200 - empty table", async () => {
                     await dbTruncateTableQuest(pool);
     
                     const res = await req(app).get("/quests/stats");
@@ -165,6 +165,70 @@ describe("DB query repository", () => {
     
                     pool.test = undefined;
                 });
+            });
+        });
+
+        describe("POST", () => {
+            before(async () => {
+                await dbTableQuestInit(pool);
+                await dbTableTruncateAndCreateSeedQuest(pool);
+            });
+        
+            afterEach(async () => {
+                await dbTableTruncateAndCreateSeedQuest(pool);
+            });
+
+            test("create quest", async () => {
+                const getResultBefore = await questRepository.getAllQuests();
+                
+                const postResult = await questRepository.createQuest("hiisfwefwewefwewefwefwefwfewfewfewfefwefwefwefwefwefwewfewfewfewfewfewefffffffff", "hard", 40, "LOLLOLLOLLOLLOLLOLLOLLOLLOLLO");
+    
+                const getResultAfter = await questRepository.getAllQuests();
+                
+                assert.equal((getResultBefore.length + 1), getResultAfter.length);
+    
+                assert.ok(postResult);
+    
+                assert.ok(Object.hasOwn(postResult, "id"));
+                assert.ok(Object.hasOwn(postResult, "createdAt"));
+                assert.ok(Object.hasOwn(postResult, "completed"));
+    
+                assert.ok(postResult.completed === false);
+                assert.ok(typeof postResult.rewardXp === "number");
+            }); 
+    
+            test("title 81 error", async () => {
+                const getResultBefore = await questRepository.getAllQuests();
+    
+                const result = await questRepository.createQuest(";sJUP;OSIJUA;EOGFJUA;EPOGJ;EOGUJ;OGUJE;OGJEOGJE'OGJEGAJE'OEJ'EJGADASDASASDASDASDD", "easy", 25);
+    
+                const getResultAfter = await questRepository.getAllQuests();
+    
+                assert.equal(result, null);
+                assert.deepEqual(getResultBefore, getResultAfter);
+            });
+    
+            test("rewardXp = 0 error", async () => {
+                const getResultBefore = await questRepository.getAllQuests();
+    
+                const result = await questRepository.createQuest("ddd", "easy", 0);
+    
+                const getResultAfter = await questRepository.getAllQuests();
+    
+                assert.equal(result, null);
+                assert.deepEqual(getResultBefore, getResultAfter);
+    
+            });
+            
+            test("difficulty invalid error", async () => {
+                const getResultBefore = await questRepository.getAllQuests();
+    
+                const result = await questRepository.createQuest("ddd", "test", 25);
+    
+                const getResultAfter = await questRepository.getAllQuests();
+    
+                assert.equal(result, null);
+                assert.deepEqual(getResultBefore, getResultAfter);
             });
         });
     

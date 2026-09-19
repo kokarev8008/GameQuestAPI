@@ -8,6 +8,8 @@ export class QuestRepository {
 
     async getAllQuests() {
         try {
+            if (this.pool.test != undefined) throw new Error("for_Test_Error");
+
             const result = await this.pool.query("SELECT * FROM quests ORDER BY id ASC");
     
             return this._questfromSnakeCaseToCamelCase(result.rows);

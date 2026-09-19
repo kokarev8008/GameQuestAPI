@@ -3,16 +3,12 @@ import { strict as assert } from "node:assert";
 import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
 import { patchQuestFixtures } from "../fixtures/patch/patchStorage.js";
-import path from "node:path";
-import fs from "node:fs";
 import app from "../../app.js";
 import pool from "../../db/pool.js";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
 import questRepository from "../../repositories/questRepository.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
-
-const readyBodyDataQuestJson = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
 
 after(async () => await pool.end());
 
@@ -37,24 +33,27 @@ describe("PATCH", () => {
     });
     
     test("/quests/1 200 - valid", async () => {
+        const beforeQuest = await questRepository.getQuestById(1);
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.valid.allValid);   
         
         assert.equal(resPatch.status, 200);
-        assert.notDeepEqual(resPatch.body, JSON.parse(readyBodyDataQuestJson)[0]);
+        assert.notDeepEqual(resPatch.body, beforeQuest);
     });
     
     test("/quests/1 200 + description cleared", async () => {
+        const beforeQuest = await questRepository.getQuestById(1);
+
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.valid.decriptionCleared);
     
         assert.equal(resPatch.status, 200);
     
         assert.equal(resPatch.body.description, "");
     
-        assert.notDeepEqual(resPatch.body, JSON.parse(readyBodyDataQuestJson)[0]);
+        assert.notDeepEqual(resPatch.body, beforeQuest);
     });
     
     test("/quests/1 400 + VALIDATION_ERROR - id/createdAt/unknownField", async () => {
-        const initialBodyQuestData = readyBodyDataQuestJson;
+        const beforeQuest = await questRepository.getQuestById(1);
     
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.idCreatedAtUnknownField);
         
@@ -66,13 +65,13 @@ describe("PATCH", () => {
         assert.ok(Object.hasOwn(resPatch.body.error.details, "createdAt"));
         assert.ok(Object.hasOwn(resPatch.body.error.details, "unknownField"));
     
-        const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+        const afterQuest = await questRepository.getQuestById(1);
     
-        assert.deepEqual(initialBodyQuestData, bodyQuest);
+        assert.deepEqual(beforeQuest, afterQuest);
     });
     
     test("/quests/1 400 + VALIDATION_ERROR - empty body", async () => {
-        const initialBodyQuestData = readyBodyDataQuestJson;
+        const beforeQuest = await questRepository.getQuestById(1);
     
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.emptyBody);
     
@@ -81,13 +80,13 @@ describe("PATCH", () => {
         assert.equal(resPatch.body.error.code, ErrorModule.errCodesText.validErrorText);
         assert.equal(resPatch.body.error.details, "null");
     
-        const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+        const afterQuest = await questRepository.getQuestById(1);
         
-        assert.deepEqual(initialBodyQuestData, bodyQuest);
+        assert.deepEqual(beforeQuest, afterQuest);
     });
     
     test("/quests/1 400 + VALIDATION_ERROR - title type", async () => {
-        const initialBodyQuestData = readyBodyDataQuestJson;
+        const beforeQuest = await questRepository.getQuestById(1);
     
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.titleType);
         
@@ -97,9 +96,9 @@ describe("PATCH", () => {
     
         assert.ok(Object.hasOwn(resPatch.body.error.details, "title"));
     
-        const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+        const afterQuest = await questRepository.getQuestById(1);
         
-        assert.deepEqual(initialBodyQuestData, bodyQuest);
+        assert.deepEqual(beforeQuest, afterQuest);
     
     });
     
@@ -125,7 +124,7 @@ describe("PATCH", () => {
     });
     
     test("/quests/1 400 + VALIDATION_ERROR - rewardXp is string", async () => {
-        const initialBodyQuestData = readyBodyDataQuestJson;
+        const beforeData = await questRepository.getQuestById(1);
     
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.rewardXpIsStr);
         
@@ -135,14 +134,14 @@ describe("PATCH", () => {
     
         assert.ok(Object.hasOwn(resPatch.body.error.details, "rewardXp")); 
     
-        const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+        const afterData = await questRepository.getQuestById(1);
         
-        assert.deepEqual(initialBodyQuestData, bodyQuest);
+        assert.deepEqual(beforeData, afterData);
     
     });
     
     test("/quests/1 400 + VALIDATION_ERROR - description length > 300", async () => {
-        const initialBodyQuestData = readyBodyDataQuestJson;
+        const beforeData = await questRepository.getQuestById(1);
     
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.decriptionLengthAlot);
         
@@ -152,13 +151,13 @@ describe("PATCH", () => {
     
         assert.ok(resPatch.body.error.details.field === "description"); 
     
-        const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+        const afterData = await questRepository.getQuestById(1);
         
-        assert.deepEqual(initialBodyQuestData, bodyQuest);
+        assert.deepEqual(beforeData, afterData);
     });
     
     test("/quests/1 400 + VALIDATION_ERROR - descriptionType", async () => {
-        const initialBodyQuestData = readyBodyDataQuestJson;
+        const beforeData = await questRepository.getQuestById(1);
     
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.decriptionType);
         
@@ -168,13 +167,13 @@ describe("PATCH", () => {
     
         assert.ok(Object.hasOwn(resPatch.body.error.details, "description"));
     
-        const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+        const afterData = await questRepository.getQuestById(1);
         
-        assert.deepEqual(initialBodyQuestData, bodyQuest);
+        assert.deepEqual(beforeData, afterData);
     });
     
     test("/quests/1 400 + VALIDATION_ERROR - completed is string", async () => {
-        const initialBodyQuestData = readyBodyDataQuestJson;
+        const beforeData = await questRepository.getQuestById(1);
     
         const resPatch = await req(app).patch("/quests/1").send(patchQuestFixtures.invalid.completedType);
         
@@ -184,8 +183,8 @@ describe("PATCH", () => {
     
         assert.ok(Object.hasOwn(resPatch.body.error.details, "completed"));
     
-        const bodyQuest = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+        const afterData = await questRepository.getQuestById(1);
         
-        assert.deepEqual(initialBodyQuestData, bodyQuest);
+        assert.deepEqual(beforeData, afterData);
     });
 });
