@@ -26,30 +26,37 @@ describe("DB query repository", () => {
         const client = await pool.connect();
 
         const clientRepo = new QuestRepository(client);
-
+        
+        await dbTableQuestInit(client);
         await dbTruncateTableQuest(client);
 
         const beforeValidQuestA = await clientRepo.createQuest("the test", "easy", 50);
         const beforeValidQuestB = await clientRepo.createQuest("two test", "hard", 250);
 
+        const errorText = "error_transaction";
+
         try {
             await client.query("BEGIN");
             
             await clientRepo.updateQuest(1, {title: "you", rewardXp: 25});
-            await clientRepo.updateQuest(2, {title: 2, rewardXp: -50});
+            const result = await clientRepo.updateQuest(2, {title: 2, rewardXp: -50});
 
-            if (declinedQuest === null) throw new Error("Declined Quest");
+            if (result === null) throw new Error(errorText);
 
             await client.query("COMMIT");
         } catch (error) {
             await client.query("ROLLBACK");
 
-            const afterValidQuestA = await clientRepo.getQuestById(1);
-            const afterValidQuestB = await clientRepo.getQuestById(2);
-            
-            assert.deepEqual(beforeValidQuestA, afterValidQuestA);
-            assert.deepEqual(beforeValidQuestB, afterValidQuestB);
-            
+            if (error.message === errorText) {
+                const afterValidQuestA = await clientRepo.getQuestById(1);
+                const afterValidQuestB = await clientRepo.getQuestById(2);
+                
+                assert.deepEqual(beforeValidQuestA, afterValidQuestA);
+                assert.deepEqual(beforeValidQuestB, afterValidQuestB);
+            } else {
+                console.error(error);
+                assert.fail(error);
+            }
         } finally {
             client.release();
         }
