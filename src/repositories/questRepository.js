@@ -69,48 +69,43 @@ export class QuestRepository {
     }
 
     async updateQuest(id, data) { 
-        try {
-            const whiteList = ["title", "description", "rewardXp", "difficulty", "completed"];
-    
-            const unknownFieldArr = [];
+        const whiteList = ["title", "description", "rewardXp", "difficulty", "completed"];
 
-            const safeKeysArr = Object.keys(data)
-                .map((key) => key === "rewardXp" ? "reward_xp" : key)
-                .filter((key) => {
-                    if (whiteList.includes(key) || key === "reward_xp") return true;
-                    else {
-                        unknownFieldArr.push(key);
-                        return false;
-                    };
-                });
-            
-            if (unknownFieldArr.length > 0) return null;
+        const unknownFieldArr = [];
 
-            const sqlKeysArr = safeKeysArr.map((key, index) => `${key} = $${index + 2}`).join(", ");
-    
-            const query = `UPDATE quests SET ${sqlKeysArr} WHERE id = $1 RETURNING *`;
-    
-            const values = [];
-    
-            for (const key in data) {
-                if (!whiteList.includes(key)) continue;
-                
-                const element = data[key];
-                
-                values.push(element);
-            }
-            
-            const result = await this.pool.query(query, [id, ...values]);
-    
-            if (result.rowCount === 0) return undefined;
+        const safeKeysArr = Object.keys(data)
+            .map((key) => key === "rewardXp" ? "reward_xp" : key)
+            .filter((key) => {
+                if (whiteList.includes(key) || key === "reward_xp") return true;
+                else {
+                    unknownFieldArr.push(key);
+                    return false;
+                };
+            });
+        
+        if (unknownFieldArr.length > 0) return null;
 
-            const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
-    
-            return camelCaseResult instanceof Quest ? camelCaseResult : null;
+        const sqlKeysArr = safeKeysArr.map((key, index) => `${key} = $${index + 2}`).join(", ");
+
+        const query = `UPDATE quests SET ${sqlKeysArr} WHERE id = $1 RETURNING *`;
+
+        const values = [];
+
+        for (const key in data) {
+            if (!whiteList.includes(key)) continue;
             
-        } catch (error) {
-            return null;
+            const element = data[key];
+            
+            values.push(element);
         }
+        
+        const result = await this.pool.query(query, [id, ...values]);
+
+        if (result.rowCount === 0) return undefined;
+
+        const camelCaseResult = this._questfromSnakeCaseToCamelCase(result.rows[0]);
+
+        return camelCaseResult instanceof Quest ? camelCaseResult : null;
     }
 
     async deleteQuest(id) {

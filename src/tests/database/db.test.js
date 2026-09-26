@@ -33,21 +33,17 @@ describe("DB query repository", () => {
         const beforeValidQuestA = await clientRepo.createQuest("the test", "easy", 50);
         const beforeValidQuestB = await clientRepo.createQuest("two test", "hard", 250);
 
-        const errorText = "error_transaction";
-
         try {
             await client.query("BEGIN");
             
             await clientRepo.updateQuest(1, {title: "you", rewardXp: 25});
-            const result = await clientRepo.updateQuest(2, {title: 2, rewardXp: -50});
-
-            if (result === null) throw new Error(errorText);
+            await clientRepo.updateQuest(2, {title: 2, rewardXp: -50});
 
             await client.query("COMMIT");
         } catch (error) {
             await client.query("ROLLBACK");
-
-            if (error.message === errorText) {
+            
+            if (error.code = "23514") {
                 const afterValidQuestA = await clientRepo.getQuestById(1);
                 const afterValidQuestB = await clientRepo.getQuestById(2);
                 
@@ -57,6 +53,7 @@ describe("DB query repository", () => {
                 console.error(error);
                 assert.fail(error);
             }
+
         } finally {
             client.release();
         }
