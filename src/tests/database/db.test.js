@@ -43,7 +43,7 @@ describe("DB query repository", () => {
         } catch (error) {
             await client.query("ROLLBACK");
             
-            if (error.code = "23514") {
+            if (error.code === "23514") {
                 const afterValidQuestA = await clientRepo.getQuestById(1);
                 const afterValidQuestB = await clientRepo.getQuestById(2);
                 
