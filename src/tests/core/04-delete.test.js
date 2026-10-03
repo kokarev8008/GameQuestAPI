@@ -5,6 +5,7 @@ import app from "../../app.js";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
 import pool from "../../db/pool.js";
 import questRepository from "../../repositories/questRepository.js";
+import { ErrorModule } from "../../err/ErrorModule.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
 
@@ -30,7 +31,7 @@ describe("DELETE", () => {
         await dbTableTruncateAndCreateSeedQuest(pool);
     });
 
-    test("/quests/1 204 - body is empty", async () => {
+    test("/quests/1 204 - success delete", async () => {
         const res = await req(app).delete("/quests/1");
         
         const questsAfter = await questRepository.getQuestById(1);
@@ -39,5 +40,13 @@ describe("DELETE", () => {
         assert.ok(Object.entries(res.body).length === 0);
 
         assert.equal(questsAfter, undefined);
+    });
+
+    test("/quests/999 404 - QUEST_NOT_FOUND", async () => {
+        const res = await req(app).delete("/quests/999");
+        
+        assert.equal(res.status, 404);
+        assert.equal(res.body.error.code, ErrorModule.errCodesText.questNotFoundText);
+        assert.equal(res.body.error.details.id, "999");
     });
 });

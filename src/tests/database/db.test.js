@@ -207,7 +207,7 @@ describe("DB query repository", () => {
                 const result = await questRepository.createQuest(";sJUP;OSIJUA;EOGFJUA;EPOGJ;EOGUJ;OGUJE;OGJEOGJE'OGJEGAJE'OEJ'EJGADASDASASDASDASDD", "easy", 25);
     
                 const getResultAfter = await questRepository.getAllQuests();
-    
+                
                 assert.equal(result, null);
                 assert.deepEqual(getResultBefore, getResultAfter);
             });

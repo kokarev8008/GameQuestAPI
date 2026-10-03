@@ -6,6 +6,7 @@ import { ErrorModule } from "../../err/ErrorModule.js";
 import pool from "../../db/pool.js";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
 import app from "../../app.js";
+import questRepository from "../../repositories/questRepository.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
 
@@ -49,6 +50,21 @@ describe("POST", () => {
         assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
         
         assert.ok(res.body.error.details.title);
+    });
+
+    test("/quests 400 + VALIDATION_ERROR - title length > 80", async () => {
+        const res = await req(app).post("/quests").send(postQuestFixtures.invalid.titleOver80);
+        
+        assert.equal(res.status, 400);
+    
+        assert.equal(res.body.error.code, ErrorModule.errCodesText.validErrorText);
+    
+        assert.ok(res.body.error.details.field);
+        assert.ok(res.body.error.details.field === "title");
+    
+        assert.ok(res.body.error.details.max);
+        assert.ok(res.body.error.details.max === 80);
+        assert.ok(res.body.error.details.data.length > 80);
     });
     
     test("/quests 400 + VALIDATION_ERROR - rewardXp string", async () => {

@@ -113,10 +113,12 @@ export class QuestRepository {
             const query = "DELETE FROM quests WHERE id = $1"
             
             const result = await this.pool.query(query, [id]);
-    
+            
+            if (result.rowCount === 0) return undefined;
+            
             return result.rows; 
         } catch (error) {
-            return undefined;
+            return null;
         }
     }
 
