@@ -49,4 +49,19 @@ describe("DELETE", () => {
         assert.equal(res.body.error.code, ErrorModule.errCodesText.questNotFoundText);
         assert.equal(res.body.error.details.id, "999");
     });
+
+    test("/quests 500 - INTERNAL_ERROR", async () => {
+        pool.test = true;
+        const before = await questRepository.getAllQuests();
+
+        const res = await req(app).delete("/quests/1");
+
+        const after = await questRepository.getAllQuests();
+        pool.test = undefined;
+
+        assert.equal(res.status, 500);
+        assert.equal(res.body.error.code, ErrorModule.errCodesText.internalErrorText);
+        
+        assert.deepEqual(before, after);
+    });
 });
