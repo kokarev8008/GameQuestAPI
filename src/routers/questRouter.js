@@ -4,6 +4,7 @@ import dataBodyValidService from "../validation/body/DataBodyQuestValidService.j
 
 const router = Router();
 
+router.get("/quests/stats", (req, res, next) => questController.getStatsAllQuests(req, res, next));
 router.get("/quests", (req, res, next) => questController.getQuests(req, res, next));
 router.get("/quests/:id", 
     (req, res, next) => dataBodyValidService.idValidMiddleware(req, res, next), 

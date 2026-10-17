@@ -1,27 +1,67 @@
-import test, { before, afterEach } from "node:test";
+import test, { before, afterEach, after, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import req from "supertest";
-import path from "node:path";
-import fs from "node:fs";
+import app from "../../app.js";
+import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
+import pool from "../../db/pool.js";
+import questRepository from "../../repositories/questRepository.js";
+import { ErrorModule } from "../../err/ErrorModule.js";
 
-process.env.DATA_FILE_PATH = path.join(process.cwd(), "src", "tests", "tmp", "readyBodyForDelete-quests.json");
-const readyBodyDataQuestJson = fs.readFileSync(path.join(process.cwd(), "src", "tests", "fixtures", "readyValidBody-quests.json"), "utf8");
+pool.options.database = process.env.DB_TEST_DATABASE;
 
-const {default: app} = await import("../../app.js");
+after(async () => await pool.end());
 
-before(() => {
-    if (fs.statSync(process.env.DATA_FILE_PATH).size <= 0) {
-        fs.writeFileSync(process.env.DATA_FILE_PATH, readyBodyDataQuestJson);
+test("db is a test database", async () => {
+    try {
+        const res = await pool.query("SELECT current_database() AS db_name");
+        assert.equal(res.rows[0].db_name, process.env.DB_TEST_DATABASE);
+    } catch (error) {
+        console.error(error);
+        process.exit(1);
     }
 });
 
-afterEach(() => {
-    fs.writeFileSync(process.env.DATA_FILE_PATH, readyBodyDataQuestJson);
-});
+describe("DELETE", () => {
+    before(async () => {
+        await dbTableQuestInit(pool);
+        await dbTableTruncateAndCreateSeedQuest(pool);
+    });
+            
+    afterEach(async () => {
+        await dbTableTruncateAndCreateSeedQuest(pool);
+    });
 
-test("DELETE /quests/1 204 - body is empty", async () => {
-    const res = await req(app).delete(`/quests/1`);
+    test("/quests/1 204 - success delete", async () => {
+        const res = await req(app).delete("/quests/1");
+        
+        const questsAfter = await questRepository.getQuestById(1);
+        
+        assert.equal(res.status, 204);
+        assert.ok(Object.entries(res.body).length === 0);
 
-    assert.equal(res.status, 204);
-    assert.ok(!res.body || Object.entries(res.body).length === 0);
+        assert.equal(questsAfter, undefined);
+    });
+
+    test("/quests/999 404 - QUEST_NOT_FOUND", async () => {
+        const res = await req(app).delete("/quests/999");
+        
+        assert.equal(res.status, 404);
+        assert.equal(res.body.error.code, ErrorModule.errCodesText.questNotFoundText);
+        assert.equal(res.body.error.details.id, "999");
+    });
+
+    test("/quests 500 - INTERNAL_ERROR", async () => {
+        pool.test = true;
+        const before = await questRepository.getAllQuests();
+
+        const res = await req(app).delete("/quests/1");
+
+        const after = await questRepository.getAllQuests();
+        pool.test = undefined;
+
+        assert.equal(res.status, 500);
+        assert.equal(res.body.error.code, ErrorModule.errCodesText.internalErrorText);
+        
+        assert.deepEqual(before, after);
+    });
 });

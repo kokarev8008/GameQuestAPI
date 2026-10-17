@@ -6,11 +6,13 @@ import rewardXpZeroDifficuluty from "./invalid-post-rewardXpZero-difficulty.json
 import descriptionType from "./invalid-post-descriptionType.json" with { type: "json" }
 import descriptionLength from "./invalid-post-descriptionLength.json" with { type: "json" }
 import completedIdCreatedAtUnknownField from "./invalid-post-completed-id-createdAt-unknownField.json" with { type: "json" }
+import titleOver80 from "./invalid-post-titleOver80.json" with { type: "json" }
 
 export const postQuestFixtures = {
     valid,
     invalid: {
         titleMissing,
+        titleOver80,
         rewardXpString,
         rewardXpDecimal,
         rewardXpZeroDifficuluty,
