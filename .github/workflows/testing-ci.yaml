@@ -1,0 +1,15 @@
+name: Testing CI
+
+on:
+  push:
+    branches: [main, week-8-ci-release-engineering]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: npm ci
+      - run: npm test
