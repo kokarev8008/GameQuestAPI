@@ -37,5 +37,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Evidance exact commit SHA
+        run: |
+          echo "Expected SHA: ${{ github.sha }}"
+          echo "Actual SHA: $(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
       - run: npm ci
       - run: npm test
