@@ -3,7 +3,7 @@ import { ErrorModule } from "../../err/ErrorModule.js";
 
 export class DataBodyQuestValidService {
     static difficultyLevelList = ["easy", "medium", "hard"];
-    _bodyWhiteList = ["title", "difficulty", "rewardXp", "description"];
+    _bodyWhiteList = ["title", "difficulty", "rewardXp", "nameOfNPC", "description"];
 
     patchInspector(req, res, next) { 
         const bodyKeysArr = Object.keys(req.body);
