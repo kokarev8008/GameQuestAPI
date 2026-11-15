@@ -4,7 +4,7 @@ import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
 import app from "../../app.js";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
-import pool from "../../db/pool.js";
+import pool from "../../db/pool.ts";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
 

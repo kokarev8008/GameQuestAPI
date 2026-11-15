@@ -3,8 +3,8 @@ import { strict as assert } from "node:assert";
 import req from "supertest";
 import app from "../../app.js";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
-import pool from "../../db/pool.js";
-import questRepository from "../../repositories/questRepository.js";
+import pool from "../../db/pool.ts";
+import questRepository from "../../repositories/questRepository.ts";
 import { ErrorModule } from "../../err/ErrorModule.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;

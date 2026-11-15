@@ -3,10 +3,10 @@ import { strict as assert } from "node:assert";
 import req from "supertest";
 import { postQuestFixtures } from "../fixtures/post/postStorage.js";
 import { ErrorModule } from "../../err/ErrorModule.js";
-import pool from "../../db/pool.js";
+import pool from "../../db/pool.ts";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
 import app from "../../app.js";
-import questRepository from "../../repositories/questRepository.js";
+import questRepository from "../../repositories/questRepository.ts";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
 

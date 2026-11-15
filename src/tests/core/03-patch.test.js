@@ -4,9 +4,9 @@ import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
 import { patchQuestFixtures } from "../fixtures/patch/patchStorage.js";
 import app from "../../app.js";
-import pool from "../../db/pool.js";
+import pool from "../../db/pool.ts";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit } from "../../analytics/dbInit.js";
-import questRepository from "../../repositories/questRepository.js";
+import questRepository from "../../repositories/questRepository.ts";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
 

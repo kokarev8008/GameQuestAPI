@@ -1,8 +1,11 @@
-import pool from "../db/pool.js";
+import pool from "../db/pool.ts";
 import Quest from "../controllers/models/Quest.js";
+import type { PoolTest } from "../db/pool.ts";
 
 export class QuestRepository {
-    constructor(pool) {
+    private pool: PoolTest;
+
+    constructor(pool: PoolTest) {
         this.pool = pool;
     }
 
@@ -19,7 +22,7 @@ export class QuestRepository {
         }
     }
 
-    async getQuestById(id) {
+    async getQuestById(id: number) {
         try {
             const result = await this.pool.query("SELECT * FROM quests WHERE id = $1", [id]);
             
@@ -42,7 +45,7 @@ export class QuestRepository {
         "FILTER(WHERE difficulty = 'hard')) AS by_difficulty FROM quests";
 
         try {
-            if (this.pool.test != undefined) throw new Error("for_Test_Error");
+            if (this.pool.test !== undefined) throw new Error("for_Test_Error");
 
             const result = await this.pool.query(query);
             
@@ -52,7 +55,7 @@ export class QuestRepository {
         }
     }
 
-    async createQuest(title, difficulty, rewardXp, description = "") {
+    async createQuest(title: string, difficulty: string, rewardXp: number, description = "") {
         const query = "INSERT INTO quests (title, difficulty, reward_xp, description)" + 
                         "VALUES ($1, $2, $3, $4) RETURNING *";
 
@@ -68,7 +71,7 @@ export class QuestRepository {
         }
     }
 
-    async updateQuest(id, data) { 
+    async updateQuest(id: number, data: Quest) { 
         const whiteList = ["title", "description", "rewardXp", "difficulty", "completed"];
 
         const unknownFieldArr = [];
@@ -94,8 +97,8 @@ export class QuestRepository {
         for (const key in data) {
             if (!whiteList.includes(key)) continue;
             
-            const element = data[key];
-            
+            const element = data[key as keyof Quest];
+
             values.push(element);
         }
         
@@ -108,7 +111,7 @@ export class QuestRepository {
         return camelCaseResult instanceof Quest ? camelCaseResult : null;
     }
 
-    async deleteQuest(id) {
+    async deleteQuest(id: number) {
         try {
             const query = "DELETE FROM quests WHERE id = $1"
             
@@ -124,7 +127,7 @@ export class QuestRepository {
         }
     }
 
-    _questfromSnakeCaseToCamelCase(resultRows) {
+    _questfromSnakeCaseToCamelCase(resultRows: Array<any> | any) {
         if (Array.isArray(resultRows)) {
             const mappedResult = resultRows.map((obj) => {
                 return new Quest(obj.id, obj.title, obj.difficulty, obj.reward_xp, obj.description, obj.completed, obj.created_at);
@@ -136,11 +139,11 @@ export class QuestRepository {
         }
     }
 
-    _fromSnakeCaseToCamelCase(resultRow) {
+    _fromSnakeCaseToCamelCase(resultRow: any) {
         return Object.fromEntries(Object.entries(resultRow)
             .map(([key, element]) => [key
                     .split("_")
-                    .map((val, index) => index != 0 ? val.replace(val[0], val[0].toUpperCase()) : val)
+                    .map((val, index) => index != 0 ? val.replace(val[0] as string, (val[0] as string).toUpperCase()) : val)
                     .join(""), 
                     element]));
     }

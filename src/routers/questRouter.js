@@ -1,4 +1,4 @@
-import questController from "../controllers/questController.js";
+import questController from "../controllers/questController.ts";
 import { Router } from "express";
 import dataBodyValidService from "../validation/body/DataBodyQuestValidService.js";
 

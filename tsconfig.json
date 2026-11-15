@@ -4,11 +4,17 @@
     "target": "esnext",
     "lib": ["esnext"],
     "types": ["node"],
+    "allowJs": true,
+    "checkJs": false,
 
+    //Потом в проде удалить
+    "noEmit": true,
+
+    "allowImportingTsExtensions": true,
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-
+    
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
 

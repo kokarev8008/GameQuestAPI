@@ -2,9 +2,9 @@ import test, { after, afterEach, before, beforeEach, describe, it } from "node:t
 import { strict as assert } from "node:assert";
 import req from "supertest";
 import { ErrorModule } from "../../err/ErrorModule.js";
-import pool from "../../db/pool.js";
+import pool from "../../db/pool.ts";
 import { dbTableTruncateAndCreateSeedQuest, dbTableQuestInit, dbTruncateTableQuest } from "../../analytics/dbInit.js";
-import questRepository, { QuestRepository } from "../../repositories/questRepository.js";
+import questRepository, { QuestRepository } from "../../repositories/questRepository.ts";
 import app from "../../app.js";
 
 pool.options.database = process.env.DB_TEST_DATABASE;
